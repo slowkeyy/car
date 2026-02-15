@@ -3,31 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>住戶車號管理系統 - 視覺測驗進階版</title>
+    <title>住戶車號管理系統 - 智慧解析</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .glass-morphism {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .tab-active {
-            border-bottom: 3px solid #3b82f6;
-            color: #3b82f6;
-        }
-        * { -webkit-tap-highlight-color: transparent; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .quiz-option {
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
+        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .tab-active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
+        .quiz-option { transition: all 0.2s; border: 2px solid transparent; }
         .quiz-option:active { transform: scale(0.98); }
         .correct-anim { animation: pulse 0.5s ease-in-out; }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
@@ -35,120 +20,84 @@
 <div id="app" class="max-w-4xl mx-auto px-4 py-8 pb-24">
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
-        <div class="flex justify-center items-center gap-2 mt-2">
-            <span class="text-slate-500">視覺記憶訓練</span>
-            <span id="global-stats" class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-bold hidden"></span>
-        </div>
+        <p class="text-slate-500 text-sm mt-1">智慧對齊解析模式</p>
     </header>
 
-    <nav class="flex justify-center space-x-4 md:space-x-8 mb-8 border-b border-slate-200 overflow-x-auto hide-scrollbar whitespace-nowrap text-sm md:text-base">
-        <button onclick="window.switchTab('search')" id="tab-search" class="pb-2 px-2 md:px-4 font-medium transition-all tab-active">車號查詢</button>
-        <button onclick="window.switchTab('quiz')" id="tab-quiz" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">視覺測驗</button>
-        <button onclick="window.switchTab('manage')" id="tab-manage" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">車輛管理</button>
-        <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
+    <nav class="flex justify-center space-x-4 mb-8 border-b border-slate-200 overflow-x-auto hide-scrollbar whitespace-nowrap">
+        <button onclick="window.switchTab('search')" id="tab-search" class="pb-2 px-4 font-medium tab-active">車號查詢</button>
+        <button onclick="window.switchTab('quiz')" id="tab-quiz" class="pb-2 px-4 font-medium text-slate-500">視覺測驗</button>
+        <button onclick="window.switchTab('manage')" id="tab-manage" class="pb-2 px-4 font-medium text-slate-500">車輛管理</button>
+        <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium text-slate-500">智慧導入</button>
     </nav>
 
     <!-- 查詢分頁 -->
-    <section id="section-search" class="space-y-6">
+    <section id="section-search">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
-            <div class="relative">
-                <input type="text" id="search-input" placeholder="輸入車號或車位搜尋..." 
-                    class="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-lg shadow-inner">
-                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <input type="text" id="search-input" placeholder="輸入車號或車位搜尋..." class="w-full px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+        </div>
+        <div id="result-container" class="hidden mt-6 animate-in fade-in">
+            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row gap-6">
+                <div class="flex-1 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 id="res-plate" class="text-4xl font-black text-blue-600"></h2>
+                        <span id="res-floor" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">品牌</p><p id="res-brand" class="text-lg font-semibold"></p></div>
+                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">顏色</p><p id="res-color" class="text-lg font-semibold"></p></div>
+                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">車位</p><p id="res-spot" class="text-lg font-semibold text-blue-600"></p></div>
+                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">住戶</p><p id="res-id" class="text-lg font-semibold"></p></div>
+                    </div>
+                </div>
+                <div id="photo-display" class="w-full md:w-48 aspect-square bg-slate-100 rounded-xl overflow-hidden border flex items-center justify-center">
+                    <img id="car-img" class="w-full h-full object-cover hidden">
+                    <span class="text-slate-400 text-sm">無照片</span>
                 </div>
             </div>
         </div>
-        <div id="result-container" class="hidden animate-in fade-in duration-300">
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100">
-                <div class="flex flex-col md:flex-row gap-8">
-                    <div class="flex-1 space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h2 id="res-plate" class="text-4xl font-black text-blue-600 tracking-tight"></h2>
-                            <span id="res-floor" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold uppercase"></span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">廠牌</p><p id="res-brand" class="text-xl font-semibold text-slate-700"></p></div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">顏色</p><p id="res-color" class="text-xl font-semibold text-slate-700"></p></div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">車位</p><p id="res-spot" class="text-xl font-semibold text-slate-700"></p></div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">住戶編號</p><p id="res-id" class="text-xl font-semibold text-slate-700"></p></div>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-64">
-                        <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative shadow-inner">
-                            <span class="text-slate-400 text-sm">無照片</span>
-                            <img id="car-img" class="absolute inset-0 w-full h-full object-cover hidden">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料。</div>
+        <div id="no-result" class="hidden text-center py-12 text-slate-400">找不到資料。</div>
     </section>
 
     <!-- 測驗分頁 -->
-    <section id="section-quiz" class="hidden space-y-6">
-        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-xl border border-slate-100 text-center relative overflow-hidden">
-            <!-- 進度條 -->
-            <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-100">
-                <div id="quiz-progress-bar" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
-            </div>
-
-            <div class="flex justify-between items-center mb-6 mt-2">
-                <span class="text-slate-400 text-sm font-bold uppercase tracking-wider">Visual Recognition</span>
-                <div class="bg-slate-100 px-3 py-1 rounded-full">
+    <section id="section-quiz" class="hidden">
+        <div class="bg-white p-6 rounded-3xl shadow-xl border text-center relative">
+            <div class="absolute top-0 left-0 w-full h-1 bg-slate-100"><div id="quiz-progress-bar" class="h-full bg-blue-500" style="width: 0%"></div></div>
+            <div class="flex justify-between items-center mb-6 pt-2">
+                <span class="text-xs font-bold text-slate-400">視覺記憶測驗</span>
+                <div class="bg-slate-100 px-3 py-1 rounded-full text-sm">
                     <span class="text-blue-600 font-black" id="quiz-score">0</span>
                     <span class="text-slate-400 mx-1">/</span>
-                    <span class="text-slate-600 font-bold" id="quiz-total-target">0</span>
+                    <span id="quiz-total-target" class="font-bold">0</span>
                 </div>
             </div>
-
-            <div id="quiz-question-container" class="mb-8 flex flex-col items-center space-y-6">
-                <div id="quiz-img-container" class="w-64 h-64 bg-slate-50 rounded-2xl overflow-hidden border-4 border-white shadow-2xl relative">
-                    <img id="quiz-question-img" class="w-full h-full object-cover">
-                    <div id="quiz-img-placeholder" class="absolute inset-0 flex items-center justify-center text-slate-300 bg-slate-50 hidden">
-                         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                         </svg>
-                    </div>
+            <div id="quiz-q-box" class="mb-8">
+                <div class="w-48 h-48 bg-slate-50 mx-auto rounded-2xl mb-4 overflow-hidden border-2 border-white shadow-lg">
+                    <img id="quiz-q-img" class="w-full h-full object-cover hidden">
+                    <div id="quiz-q-noimg" class="h-full flex items-center justify-center text-slate-300">無照片</div>
                 </div>
-                <div>
-                    <div id="quiz-question-plate" class="text-6xl font-black text-slate-800 tracking-tighter mb-2">---</div>
-                    <div class="flex justify-center gap-2">
-                        <span id="quiz-question-brand" class="px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-sm font-bold">---</span>
-                        <span id="quiz-question-color" class="px-4 py-1.5 bg-slate-100 text-slate-600 rounded-full text-sm font-bold">---</span>
-                    </div>
-                </div>
+                <div id="quiz-q-plate" class="text-5xl font-black text-slate-800">---</div>
+                <div id="quiz-q-info" class="text-slate-400 text-sm mt-2">---</div>
             </div>
-
             <div id="quiz-options" class="grid grid-cols-2 gap-4"></div>
-
-            <div id="quiz-feedback-box" class="mt-8 hidden animate-in slide-in-from-bottom-4">
-                 <div id="quiz-feedback" class="p-4 rounded-2xl font-bold mb-4"></div>
-                 <button onclick="window.generateQuiz()" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg hover:bg-blue-700 transition-all text-lg">下一題</button>
+            <div id="quiz-feedback-box" class="hidden mt-6">
+                <div id="quiz-feedback" class="p-4 rounded-xl font-bold mb-4"></div>
+                <button onclick="window.generateQuiz()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold">下一題</button>
             </div>
-            
-            <div id="quiz-empty-state" class="hidden py-12 text-slate-400 italic">需至少 4 筆有車位的資料才能開始測驗。</div>
+            <div id="quiz-empty" class="hidden py-12 text-slate-400 italic">請先導入至少 4 筆有車位的資料。</div>
         </div>
     </section>
 
     <!-- 管理分頁 -->
     <section id="section-manage" class="hidden space-y-4">
         <div class="flex justify-between items-center">
-            <h3 class="text-xl font-bold text-slate-800">車輛清單 (<span id="manage-count">0</span>)</h3>
-            <button onclick="window.openEditModal(null)" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700">新增車輛</button>
+            <h3 class="font-bold">車輛清單 (<span id="manage-count">0</span>)</h3>
+            <button onclick="window.openEditModal(null)" class="text-sm bg-blue-600 text-white px-3 py-1.5 rounded-lg">新增</button>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-3">
-            <select id="filter-floor" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有樓層</option><option value="B1">B1</option><option value="B2">B2</option><option value="B3">B3</option><option value="B4">B4</option></select>
-            <select id="filter-brand" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有品牌</option></select>
-            <select id="filter-color" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有顏色</option></select>
-            <select id="sort-mode" onchange="window.renderManageList()" class="p-2 bg-blue-50 border-blue-100 rounded-lg text-sm font-bold text-blue-600"><option value="logic">樓層優先</option><option value="spot">車位優先</option></select>
-        </div>
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden overflow-x-auto">
-            <table class="w-full text-left border-collapse min-w-[500px]">
-                <thead class="bg-slate-50 border-b"><tr class="text-xs font-bold text-slate-400 uppercase"><th class="p-4">車牌/照片</th><th class="p-4">車位</th><th class="p-4">廠牌顏色</th><th class="p-4 text-right">編輯</th></tr></thead>
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 border-b text-slate-400 font-bold">
+                    <tr><th class="p-3">車牌</th><th class="p-3">車位</th><th class="p-3">資訊</th><th class="p-3 text-right">操作</th></tr>
+                </thead>
                 <tbody id="manage-list" class="divide-y"></tbody>
             </table>
         </div>
@@ -156,435 +105,293 @@
 
     <!-- 導入分頁 -->
     <section id="section-data" class="hidden space-y-6">
-        <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
-            <h3 class="text-xl font-bold mb-4">資料導入</h3>
-            <textarea id="raw-html-input" rows="8" class="w-full p-4 border rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="將 Excel/Numbers 選取的表格內容貼在此處..."></textarea>
-            <div class="flex gap-4">
-                <button onclick="window.importDataFromText()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg">開始導入</button>
-                <button onclick="window.clearLocalData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold">清空資料</button>
+        <div class="bg-white p-6 rounded-2xl shadow-lg border">
+            <h3 class="font-bold mb-2">智慧資料解析器</h3>
+            <p class="text-xs text-slate-500 mb-4">直接貼上您剛才那種「車位、車牌、品牌分開」的文字，系統會自動對齊。</p>
+            <textarea id="raw-input" rows="10" class="w-full p-4 border rounded-xl font-mono text-xs focus:ring-2 focus:ring-blue-500 outline-none" placeholder="將亂掉的文字貼在此處..."></textarea>
+            <div class="flex gap-4 mt-4">
+                <button onclick="window.smartImport()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold">開始智慧解析</button>
+                <button onclick="window.clearData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold">清空</button>
             </div>
-            <p class="mt-4 text-xs text-slate-400">系統會自動識別 Tab 分隔的純文字或網頁表格 HTML 代碼。</p>
         </div>
     </section>
 
-    <!-- 編輯彈窗 (含圖片上傳) -->
-    <div id="edit-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 px-4 backdrop-blur-sm">
-        <div class="bg-white p-6 rounded-3xl max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6"><h3 id="modal-title" class="text-2xl font-bold">車輛資訊</h3><button onclick="window.closeEditModal()" class="p-2 hover:bg-slate-100 rounded-full">✕</button></div>
-            <div class="space-y-6">
+    <!-- 編輯彈窗 -->
+    <div id="edit-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6"><h3 id="modal-title" class="text-xl font-bold">車輛資訊</h3><button onclick="window.closeEditModal()">✕</button></div>
+            <div class="space-y-4">
                 <div class="flex flex-col items-center">
-                    <div id="modal-photo-preview" class="w-48 h-48 bg-slate-50 rounded-2xl flex items-center justify-center border-4 border-slate-100 overflow-hidden relative group">
+                    <div class="w-32 h-32 bg-slate-50 rounded-2xl border flex items-center justify-center relative overflow-hidden">
                         <img id="modal-preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
-                        <div class="flex flex-col items-center pointer-events-none text-slate-300 group-hover:text-slate-400 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span class="text-xs mt-2 font-bold">點擊下方按鈕上傳</span>
-                        </div>
+                        <span class="text-[10px] text-slate-400">預覽</span>
                     </div>
-                    <input type="file" accept="image/*" onchange="window.previewImage(event)" id="file-input" class="hidden">
-                    <button onclick="document.getElementById('file-input').click()" class="mt-4 px-6 py-2 bg-slate-800 text-white rounded-full text-xs font-bold hover:bg-black transition-all">上傳或更換照片</button>
-                    <button id="remove-img-btn" onclick="window.removeImage()" class="mt-2 text-xs text-red-500 font-bold hidden">移除照片</button>
+                    <input type="file" accept="image/*" id="file-input" class="hidden" onchange="window.previewImage(event)">
+                    <button onclick="document.getElementById('file-input').click()" class="mt-2 text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-600">更換照片</button>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">車牌號碼</label><input type="text" id="edit-plate" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">車位號碼</label><input type="text" id="edit-spot" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">車廠品牌</label><input type="text" id="edit-brand" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">車身顏色</label><input type="text" id="edit-color" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">停放樓層</label><input type="text" id="edit-floor" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
-                    <div class="space-y-1"><label class="text-xs font-bold text-slate-400 ml-1">住戶編號</label><input type="text" id="edit-id" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"></div>
+                    <input type="text" id="edit-plate" placeholder="車牌" class="p-3 bg-slate-50 rounded-xl border">
+                    <input type="text" id="edit-spot" placeholder="車位" class="p-3 bg-slate-50 rounded-xl border">
+                    <input type="text" id="edit-brand" placeholder="品牌" class="p-3 bg-slate-50 rounded-xl border">
+                    <input type="text" id="edit-color" placeholder="顏色" class="p-3 bg-slate-50 rounded-xl border">
+                    <input type="text" id="edit-floor" placeholder="樓層" class="p-3 bg-slate-50 rounded-xl border">
+                    <input type="text" id="edit-id" placeholder="住戶編號" class="p-3 bg-slate-50 rounded-xl border">
                 </div>
                 <div class="flex gap-4 pt-4">
-                    <button id="delete-btn" onclick="window.deleteCurrentCar()" class="px-6 py-3 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-colors">刪除</button>
-                    <button onclick="window.saveCarData()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all">儲存車輛</button>
+                    <button onclick="window.deleteCar()" id="delete-btn" class="px-6 py-3 text-red-500 font-bold">刪除</button>
+                    <button onclick="window.saveCar()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold">儲存</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- 訊息彈窗 -->
-    <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[60]">
-        <div class="bg-white p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl">
-            <p id="msg-content" class="text-lg font-bold text-slate-800"></p>
-            <button onclick="window.closeModal()" class="mt-6 w-full py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-lg">我知道了</button>
         </div>
     </div>
 </div>
 
 <script>
-    // 資料狀態
-    let carData = JSON.parse(localStorage.getItem('local_car_db') || '[]');
+    let carData = JSON.parse(localStorage.getItem('car_db_v2') || '[]');
     let currentEditPlate = null;
-    let currentPreviewBase64 = null;
-    
-    // 測驗統計狀態
-    let quizStats = {
-        score: 0,
-        answered: [] // 紀錄本輪已回答過的車牌，避免重複
-    };
-    let quizAnswer = null;
+    let currentImgBase64 = null;
+    let quizState = { score: 0, answered: [], currentTarget: null };
 
-    // 基礎切換功能
     window.switchTab = (tab) => {
-        ['search', 'quiz', 'manage', 'data'].forEach(s => {
-            document.getElementById(`section-${s}`).classList.add('hidden');
-            document.getElementById(`tab-${s}`).className = "pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500";
+        ['search', 'quiz', 'manage', 'data'].forEach(t => {
+            document.getElementById(`section-${t}`).classList.add('hidden');
+            document.getElementById(`tab-${t}`).className = "pb-2 px-4 font-medium text-slate-500";
         });
         document.getElementById(`section-${tab}`).classList.remove('hidden');
-        document.getElementById(`tab-${tab}`).className = "pb-2 px-2 md:px-4 font-medium transition-all tab-active";
+        document.getElementById(`tab-${tab}`).className = "pb-2 px-4 font-medium tab-active";
+        if(tab === 'manage') renderManage();
+        if(tab === 'quiz') resetQuiz();
+    };
+
+    // --- 核心：智慧解析器 ---
+    window.smartImport = () => {
+        const input = document.getElementById('raw-input').value;
+        if(!input) return;
+
+        // 1. 提取所有車位號碼 (3位或4位純數字)
+        const spots = input.match(/\b\d{3}\b/g) || [];
         
-        if(tab === 'manage') { window.updateFilterOptions(); window.renderManageList(); }
-        if(tab === 'quiz') { window.resetQuizStats(); window.generateQuiz(); }
+        // 2. 提取所有車牌 (格式如 ABC-1234, 1234-AB, 5218-QU 等)
+        // 匹配規則：包含連字號的英數組合，或特定的車牌格式
+        const plates = input.match(/[A-Z0-9]{2,4}-[A-Z0-9]{2,4}/g) || [];
+
+        // 3. 提取品牌顏色資訊 (尋找包含 LEXUS, bmw, benz 等關鍵字或特定結構的行)
+        // 由於品牌資訊通常連著「LEXUS 灰 b2」，我們用正則抓取
+        const infoLines = input.match(/(LEXUS|bmw|benz|toyota|ford|porshe|MINI|INFINITI|bently|LAMBO|NISAN|MASA|volvo|MARTIN|HONDA|MAZDA|ROVER|TESLA|AUDI|福斯)[^\n]+/gi) || [];
+
+        // 4. 提取住戶編號 (如 24A, 19C, 30CD 等)
+        const residentIds = input.match(/\b\d{1,2}[A-D]{1,2}\b/g) || [];
+
+        // 對齊邏輯：以「車牌」為核心
+        let newBatch = [];
+        plates.forEach((plate, index) => {
+            const info = infoLines[index] || "";
+            const infoParts = info.split(/\s+/); // 分割 "LEXUS 灰 b2"
+            
+            newBatch.push({
+                plate: plate,
+                spot: spots[index] || "",
+                brand: infoParts[0] || "",
+                color: infoParts[1] || "",
+                floor: infoParts[2] || "",
+                id: residentIds[index] || "",
+                photoBase64: null
+            });
+        });
+
+        if(newBatch.length > 0) {
+            carData = newBatch;
+            localStorage.setItem('car_db_v2', JSON.stringify(carData));
+            alert(`智慧解析成功！已對齊 ${newBatch.length} 台車輛。`);
+            window.switchTab('manage');
+        } else {
+            alert("解析失敗，請確認內容包含車牌與車位資訊。");
+        }
     };
 
-    window.closeModal = () => document.getElementById('msg-modal').classList.add('hidden');
-    function showMsg(t) { document.getElementById('msg-content').innerText = t; document.getElementById('msg-modal').classList.remove('hidden'); }
-
-    // --- 測驗功能邏輯 ---
-    window.resetQuizStats = () => {
-        quizStats.score = 0;
-        quizStats.answered = [];
-        const total = carData.filter(c => c.spot && c.plate).length;
-        document.getElementById('quiz-score').innerText = '0';
-        document.getElementById('quiz-total-target').innerText = total;
-        document.getElementById('quiz-progress-bar').style.width = '0%';
-    };
+    // --- 測驗功能 ---
+    function resetQuiz() {
+        quizState.score = 0;
+        quizState.answered = [];
+        const pool = carData.filter(c => c.spot && c.plate);
+        document.getElementById('quiz-total-target').innerText = pool.length;
+        window.generateQuiz();
+    }
 
     window.generateQuiz = () => {
         const pool = carData.filter(c => c.spot && c.plate);
-        // 過濾掉本輪已經答對過的，如果全答完了就重置
-        let available = pool.filter(c => !quizStats.answered.includes(c.plate));
-        if (available.length === 0 && pool.length > 0) {
-            quizStats.answered = [];
-            available = pool;
-        }
-
-        const optionsContainer = document.getElementById('quiz-options');
+        const qBox = document.getElementById('quiz-q-box');
+        const empty = document.getElementById('quiz-empty');
+        const options = document.getElementById('quiz-options');
         const feedbackBox = document.getElementById('quiz-feedback-box');
-        const emptyState = document.getElementById('quiz-empty-state');
-        const questionContainer = document.getElementById('quiz-question-container');
 
-        feedbackBox.classList.add('hidden');
-        optionsContainer.innerHTML = '';
-
-        if (pool.length < 4) {
-            questionContainer.classList.add('hidden');
-            emptyState.classList.remove('hidden');
-            return;
-        }
-
-        emptyState.classList.add('hidden');
-        questionContainer.classList.remove('hidden');
-
-        // 隨機選題
-        const target = available[Math.floor(Math.random() * available.length)];
-        quizAnswer = target.spot;
-
-        // 更新 UI
-        document.getElementById('quiz-question-plate').innerText = target.plate;
-        document.getElementById('quiz-question-brand').innerText = target.brand || '未知品牌';
-        document.getElementById('quiz-question-color').innerText = target.color || '未知顏色';
+        if(pool.length < 4) { qBox.classList.add('hidden'); options.innerHTML=''; empty.classList.remove('hidden'); return; }
         
-        const qImg = document.getElementById('quiz-question-img');
-        const qPlaceholder = document.getElementById('quiz-img-placeholder');
-        if (target.photoBase64) {
-            qImg.src = target.photoBase64;
-            qImg.classList.remove('hidden');
-            qPlaceholder.classList.add('hidden');
-        } else {
-            qImg.classList.add('hidden');
-            qPlaceholder.classList.remove('hidden');
-        }
+        empty.classList.add('hidden');
+        qBox.classList.remove('hidden');
+        feedbackBox.classList.add('hidden');
+        options.innerHTML = '';
 
-        // 產生選項
+        let available = pool.filter(c => !quizState.answered.includes(c.plate));
+        if(available.length === 0) { quizState.answered = []; available = pool; }
+
+        const target = available[Math.floor(Math.random() * available.length)];
+        quizState.currentTarget = target;
+
+        document.getElementById('quiz-q-plate').innerText = target.plate;
+        document.getElementById('quiz-q-info').innerText = `${target.brand} ${target.color} (${target.floor})`;
+        
+        const qImg = document.getElementById('quiz-q-img');
+        const qNoImg = document.getElementById('quiz-q-noimg');
+        if(target.photoBase64) { qImg.src = target.photoBase64; qImg.classList.remove('hidden'); qNoImg.classList.add('hidden'); }
+        else { qImg.classList.add('hidden'); qNoImg.classList.remove('hidden'); }
+
         let opts = [target.spot];
-        while (opts.length < 4) {
+        while(opts.length < 4) {
             const r = pool[Math.floor(Math.random() * pool.length)].spot;
-            if (!opts.includes(r)) opts.push(r);
+            if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
 
         opts.forEach(opt => {
-            const b = document.createElement('button');
-            b.className = 'quiz-option p-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-2xl font-black text-slate-700 hover:bg-white hover:border-blue-400 hover:shadow-lg transition-all';
-            b.innerText = opt;
-            b.onclick = () => window.checkQuiz(opt, b, target.plate);
-            optionsContainer.appendChild(b);
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xl font-black text-slate-700';
+            btn.innerText = opt;
+            btn.onclick = () => checkQuiz(opt, btn);
+            options.appendChild(btn);
         });
     };
 
-    window.checkQuiz = (selected, btn, plate) => {
-        const feedbackBox = document.getElementById('quiz-feedback-box');
+    function checkQuiz(selected, btn) {
+        const allBtns = document.querySelectorAll('.quiz-option');
         const feedback = document.getElementById('quiz-feedback');
         const scoreEl = document.getElementById('quiz-score');
-        const allBtns = document.querySelectorAll('.quiz-option');
-        const total = parseInt(document.getElementById('quiz-total-target').innerText);
-        
         allBtns.forEach(b => b.disabled = true);
 
-        if (selected === quizAnswer) {
-            btn.classList.add('bg-green-500', 'border-green-600', 'text-white', 'correct-anim');
-            btn.classList.remove('bg-slate-50', 'text-slate-700');
-            quizStats.score++;
-            quizStats.answered.push(plate);
-            feedback.innerText = "答對了！非常準確 ✨";
-            feedback.className = "p-4 rounded-2xl font-bold mb-4 bg-green-50 text-green-700 border border-green-100";
+        if(selected === quizState.currentTarget.spot) {
+            btn.classList.add('bg-green-500', 'text-white', 'correct-anim');
+            quizState.score++;
+            quizState.answered.push(quizState.currentTarget.plate);
+            feedback.innerText = "正確！";
+            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-green-50 text-green-700";
         } else {
-            btn.classList.add('bg-red-500', 'border-red-600', 'text-white');
-            btn.classList.remove('bg-slate-50', 'text-slate-700');
-            feedback.innerText = `可惜答錯了，正確車位是：${quizAnswer}`;
-            feedback.className = "p-4 rounded-2xl font-bold mb-4 bg-red-50 text-red-700 border border-red-100";
-            
-            // 標示出正確答案
-            allBtns.forEach(b => {
-                if(b.innerText === quizAnswer) b.classList.add('border-green-500', 'text-green-600', 'bg-green-50');
-            });
+            btn.classList.add('bg-red-500', 'text-white');
+            feedback.innerText = `錯誤，正確答案是 ${quizState.currentTarget.spot}`;
+            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-red-50 text-red-700";
         }
-
-        // 更新統計
-        scoreEl.innerText = quizStats.score;
-        const progress = (quizStats.answered.length / total) * 100;
+        
+        scoreEl.innerText = quizState.score;
+        const progress = (quizState.answered.length / carData.filter(c=>c.spot).length) * 100;
         document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
-        
-        feedbackBox.classList.remove('hidden');
-    };
+        document.getElementById('quiz-feedback-box').classList.remove('hidden');
+    }
 
-    // --- 編輯功能 (含圖片) ---
-    window.openEditModal = (plate = null) => {
+    // --- 管理與編輯 ---
+    function renderManage() {
+        const list = document.getElementById('manage-list');
+        document.getElementById('manage-count').innerText = carData.length;
+        list.innerHTML = carData.map(c => `
+            <tr>
+                <td class="p-3 font-bold">${c.plate}</td>
+                <td class="p-3 text-blue-600 font-bold">${c.spot}</td>
+                <td class="p-3 text-xs text-slate-400">${c.brand} ${c.color}</td>
+                <td class="p-3 text-right"><button onclick="window.openEditModal('${c.plate}')" class="text-blue-500">編輯</button></td>
+            </tr>
+        `).join('');
+    }
+
+    window.openEditModal = (plate) => {
         currentEditPlate = plate;
-        currentPreviewBase64 = null;
-        document.getElementById('modal-preview-img').classList.add('hidden');
-        document.getElementById('remove-img-btn').classList.add('hidden');
-        
-        if (plate) {
-            const car = carData.find(c => c.plate === plate);
-            document.getElementById('edit-plate').value = car.plate;
-            document.getElementById('edit-spot').value = car.spot || '';
-            document.getElementById('edit-brand').value = car.brand || '';
-            document.getElementById('edit-color').value = car.color || '';
-            document.getElementById('edit-floor').value = car.floor || '';
-            document.getElementById('edit-id').value = car.id || '';
-            if(car.photoBase64) {
-                document.getElementById('modal-preview-img').src = car.photoBase64;
+        currentImgBase64 = null;
+        if(plate) {
+            const c = carData.find(x => x.plate === plate);
+            document.getElementById('edit-plate').value = c.plate;
+            document.getElementById('edit-spot').value = c.spot;
+            document.getElementById('edit-brand').value = c.brand;
+            document.getElementById('edit-color').value = c.color;
+            document.getElementById('edit-floor').value = c.floor;
+            document.getElementById('edit-id').value = c.id;
+            if(c.photoBase64) {
+                document.getElementById('modal-preview-img').src = c.photoBase64;
                 document.getElementById('modal-preview-img').classList.remove('hidden');
-                document.getElementById('remove-img-btn').classList.remove('hidden');
-                currentPreviewBase64 = car.photoBase64;
+                currentImgBase64 = c.photoBase64;
+            } else {
+                document.getElementById('modal-preview-img').classList.add('hidden');
             }
-            document.getElementById('delete-btn').classList.remove('hidden');
-            document.getElementById('modal-title').innerText = "編輯車輛資訊";
         } else {
-            ['edit-plate','edit-spot','edit-brand','edit-color','edit-floor','edit-id'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('delete-btn').classList.add('hidden');
-            document.getElementById('modal-title').innerText = "新增車輛資訊";
+            ['plate','spot','brand','color','floor','id'].forEach(f => document.getElementById(`edit-${f}`).value = '');
+            document.getElementById('modal-preview-img').classList.add('hidden');
         }
         document.getElementById('edit-modal').classList.remove('hidden');
     };
 
-    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
+    window.saveCar = () => {
+        const plate = document.getElementById('edit-plate').value.toUpperCase().trim();
+        const obj = {
+            plate,
+            spot: document.getElementById('edit-spot').value,
+            brand: document.getElementById('edit-brand').value,
+            color: document.getElementById('edit-color').value,
+            floor: document.getElementById('edit-floor').value,
+            id: document.getElementById('edit-id').value,
+            photoBase64: currentImgBase64
+        };
+        if(currentEditPlate) {
+            const i = carData.findIndex(x => x.plate === currentEditPlate);
+            carData[i] = obj;
+        } else {
+            carData.push(obj);
+        }
+        localStorage.setItem('car_db_v2', JSON.stringify(carData));
+        document.getElementById('edit-modal').classList.add('hidden');
+        renderManage();
+    };
 
     window.previewImage = (e) => {
         const file = e.target.files[0];
-        if(!file) return;
-        
-        // 壓縮圖片品質避免 localStorage 爆掉 (約 300KB)
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (ev) => {
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 600;
-                let width = img.width;
-                let height = img.height;
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-                canvas.width = width;
-                canvas.height = height;
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                currentPreviewBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                document.getElementById('modal-preview-img').src = currentPreviewBase64;
+                canvas.width = 400; canvas.height = 400;
+                ctx.drawImage(img, 0, 0, 400, 400);
+                currentImgBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('modal-preview-img').src = currentImgBase64;
                 document.getElementById('modal-preview-img').classList.remove('hidden');
-                document.getElementById('remove-img-btn').classList.remove('hidden');
             };
-            img.src = event.target.result;
+            img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     };
 
-    window.removeImage = () => {
-        currentPreviewBase64 = null;
-        document.getElementById('modal-preview-img').classList.add('hidden');
-        document.getElementById('remove-img-btn').classList.add('hidden');
-    };
-
-    window.saveCarData = () => {
-        const plate = document.getElementById('edit-plate').value.trim().toUpperCase();
-        if(!plate) return showMsg("請輸入車牌號碼");
-        
-        const car = {
-            id: document.getElementById('edit-id').value.trim(),
-            plate: plate,
-            brand: document.getElementById('edit-brand').value.trim(),
-            color: document.getElementById('edit-color').value.trim(),
-            floor: document.getElementById('edit-floor').value.trim().toUpperCase(),
-            spot: document.getElementById('edit-spot').value.trim().toUpperCase(),
-            photoBase64: currentPreviewBase64
-        };
-
-        if(currentEditPlate) {
-            const idx = carData.findIndex(c => c.plate === currentEditPlate);
-            carData[idx] = car;
-        } else {
-            if(carData.some(c => c.plate === plate)) return showMsg("此車牌已存在系統中");
-            carData.push(car);
-        }
-
-        localStorage.setItem('local_car_db', JSON.stringify(carData));
-        window.closeEditModal();
-        window.renderManageList();
-    };
-
-    window.deleteCurrentCar = () => {
-        if(!confirm("確定要刪除這台車嗎？此操作無法還原。")) return;
-        carData = carData.filter(c => c.plate !== currentEditPlate);
-        localStorage.setItem('local_car_db', JSON.stringify(carData));
-        window.closeEditModal();
-        window.renderManageList();
-    };
-
-    // --- 導入功能 ---
-    window.importDataFromText = () => {
-        const input = document.getElementById('raw-html-input').value.trim();
-        if(!input) return showMsg("請先貼上資料內容");
-
-        let batch = [];
-        if (input.includes('<tr')) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(input, 'text/html');
-            const rows = doc.querySelectorAll('tr');
-            rows.forEach(r => {
-                const tds = Array.from(r.querySelectorAll('td')).map(td => td.innerText.trim());
-                if(tds.length >= 2) processRow(tds, batch);
-            });
-        } else {
-            const lines = input.split(/\n/);
-            lines.forEach(line => {
-                if(!line.trim()) return;
-                const cells = line.split(/\t| {2,}/).map(c => c.trim());
-                processRow(cells, batch);
-            });
-        }
-
-        if(batch.length > 0) {
-            if(carData.length > 0 && confirm("是否要覆蓋現有資料？(取消則採合併方式)")) carData = batch;
-            else {
-                batch.forEach(nb => {
-                    const i = carData.findIndex(c => c.plate === nb.plate);
-                    if(i > -1) carData[i] = nb; else carData.push(nb);
-                });
-            }
-            localStorage.setItem('local_car_db', JSON.stringify(carData));
-            showMsg(`成功導入 ${batch.length} 筆資料`);
-            document.getElementById('raw-html-input').value = '';
-            window.renderManageList();
-            window.switchTab('manage');
-        } else {
-            showMsg("格式無法識別，請確保包含車牌欄位。");
-        }
-    };
-
-    function processRow(cells, batch) {
-        // 預設順序：0編號, 1車牌, 2品牌, 3顏色, 4樓層, 5車位
-        const plate = cells[1] ? cells[1].toUpperCase() : "";
-        if (!plate || plate.includes("車號") || plate.includes("車牌")) return;
-        batch.push({
-            id: cells[0] || "",
-            plate: plate,
-            brand: cells[2] || "",
-            color: cells[3] || "",
-            floor: cells[4] ? cells[4].toUpperCase() : "",
-            spot: cells[5] ? cells[5].toUpperCase() : "",
-            photoBase64: null
-        });
-    }
-
-    // --- 列表顯示與過濾 ---
-    window.renderManageList = () => {
-        const floorF = document.getElementById('filter-floor').value;
-        const brandF = document.getElementById('filter-brand').value;
-        const colorF = document.getElementById('filter-color').value;
-        const sortMode = document.getElementById('sort-mode').value;
-
-        let filtered = carData.filter(c => {
-            return (floorF === 'all' || c.floor === floorF) &&
-                   (brandF === 'all' || c.brand === brandF) &&
-                   (colorF === 'all' || c.color === colorF);
-        });
-
-        filtered.sort((a, b) => {
-            if (sortMode === 'logic') return (a.floor || "").localeCompare(b.floor || "") || (a.spot || "").localeCompare(b.spot || "");
-            return (a.spot || "").localeCompare(b.spot || "");
-        });
-
-        document.getElementById('manage-count').innerText = filtered.length;
-        const list = document.getElementById('manage-list');
-        list.innerHTML = filtered.map(c => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="p-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden border shadow-sm flex-shrink-0">
-                            ${c.photoBase64 ? `<img src="${c.photoBase64}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-[10px] text-slate-300">NO IMG</div>'}
-                        </div>
-                        <span class="font-bold text-slate-700">${c.plate}</span>
-                    </div>
-                </td>
-                <td class="p-4"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded font-black text-sm">${c.spot || '-'}</span></td>
-                <td class="p-4">
-                    <div class="text-sm font-medium text-slate-600">${c.brand || ''}</div>
-                    <div class="text-xs text-slate-400">${c.color || ''} ${c.floor ? '• '+c.floor : ''}</div>
-                </td>
-                <td class="p-4 text-right"><button onclick="window.openEditModal('${c.plate}')" class="text-blue-500 font-bold hover:underline">編輯</button></td>
-            </tr>
-        `).join('');
-    };
-
-    window.updateFilterOptions = () => {
-        const brands = [...new Set(carData.map(c => c.brand).filter(b => b))].sort();
-        const colors = [...new Set(carData.map(c => c.color).filter(c => c))].sort();
-        document.getElementById('filter-brand').innerHTML = '<option value="all">所有品牌</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
-        document.getElementById('filter-color').innerHTML = '<option value="all">所有顏色</option>' + colors.map(c => `<option value="${c}">${c}</option>`).join('');
-    };
-
-    window.clearLocalData = () => { if(confirm("確定清空所有資料？包含已上傳的照片也會消失！")) { localStorage.removeItem('local_car_db'); location.reload(); }};
-    
-    // 搜尋輸入監聽
+    // 搜尋功能
     document.getElementById('search-input').addEventListener('input', (e) => {
-        const v = e.target.value.toUpperCase().trim();
+        const v = e.target.value.toUpperCase();
         const res = document.getElementById('result-container');
         const no = document.getElementById('no-result');
-        if(!v) { res.classList.add('hidden'); no.classList.add('hidden'); return; }
-        
-        const f = carData.find(c => c.plate.includes(v) || (c.spot && c.spot.includes(v)));
+        if(!v) { res.classList.add('hidden'); return; }
+        const f = carData.find(c => c.plate.includes(v) || c.spot.includes(v));
         if(f) {
             document.getElementById('res-plate').innerText = f.plate;
-            document.getElementById('res-brand').innerText = f.brand || '---';
-            document.getElementById('res-color').innerText = f.color || '---';
-            document.getElementById('res-spot').innerText = f.spot || '---';
-            document.getElementById('res-floor').innerText = f.floor || '---';
-            document.getElementById('res-id').innerText = f.id || '---';
+            document.getElementById('res-brand').innerText = f.brand;
+            document.getElementById('res-color').innerText = f.color;
+            document.getElementById('res-spot').innerText = f.spot;
+            document.getElementById('res-floor').innerText = f.floor;
+            document.getElementById('res-id').innerText = f.id;
             const img = document.getElementById('car-img');
-            const span = document.querySelector('#photo-display span');
-            if(f.photoBase64) { img.src = f.photoBase64; img.classList.remove('hidden'); span.classList.add('hidden'); }
-            else { img.classList.add('hidden'); span.classList.remove('hidden'); }
+            if(f.photoBase64) { img.src = f.photoBase64; img.classList.remove('hidden'); }
+            else img.classList.add('hidden');
             res.classList.remove('hidden'); no.classList.add('hidden');
-        } else { res.classList.add('hidden'); no.classList.remove('hidden'); }
+        } else {
+            res.classList.add('hidden'); no.classList.remove('hidden');
+        }
     });
 
-    // 初始化載入
-    window.renderManageList();
+    window.clearData = () => { if(confirm("確定清空？")) { localStorage.removeItem('car_db_v2'); location.reload(); }};
+    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
+    window.deleteCar = () => { carData = carData.filter(x => x.plate !== currentEditPlate); localStorage.setItem('car_db_v2', JSON.stringify(carData)); window.closeEditModal(); renderManage(); };
 </script>
 </body>
 </html>
