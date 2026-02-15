@@ -35,7 +35,6 @@
         <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
     </nav>
 
-    <!-- 搜尋區塊 -->
     <section id="section-search" class="space-y-6">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="relative">
@@ -48,7 +47,6 @@
                 </div>
             </div>
         </div>
-
         <div id="result-container" class="hidden">
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <div class="flex flex-col md:flex-row gap-8">
@@ -76,7 +74,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="w-full md:w-64 space-y-4">
                         <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative group">
                             <span class="text-slate-400 text-sm text-center px-4">尚未上傳照片</span>
@@ -90,11 +87,9 @@
                 </div>
             </div>
         </div>
-        
         <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到資訊。</div>
     </section>
 
-    <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
             <h3 class="text-xl font-bold text-slate-600 mb-2">隨機測驗</h3>
@@ -108,11 +103,10 @@
         </div>
     </section>
 
-    <!-- 導入區塊 -->
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h3 class="text-xl font-bold mb-4">資料導入工具</h3>
-            <p class="text-sm text-slate-500 mb-4">請打開您的原始 HTML 檔案，複製全部內容（Ctrl+A 然後 Ctrl+C）並貼在下面：</p>
+            <p class="text-sm text-slate-500 mb-4">請打開您的原始 HTML 檔案，貼在下面：</p>
             <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="<html>...</html>"></textarea>
             <button onclick="window.importDataFromHTML()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-md transition-all">
                 開始解析並導入雲端
@@ -121,7 +115,6 @@
         </div>
     </section>
 
-    <!-- 彈窗 -->
     <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 px-4">
         <div class="bg-white p-6 rounded-xl max-w-sm w-full shadow-2xl">
             <p id="msg-content" class="text-center text-slate-700 font-medium"></p>
@@ -135,51 +128,14 @@
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 檢查 Firebase 設定是否存在
-    let db, auth;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-manager-v2';
-
-    try {
-        if (typeof __firebase_config !== 'undefined') {
-            const firebaseConfig = JSON.parse(__firebase_config);
-            const app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            initAuth();
-        }
-    } catch (e) {
-        console.error("Firebase Init Error", e);
-    }
-
+    // --- 全域變數 ---
+    let db = null;
+    let auth = null;
     let user = null;
     let carData = [];
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-manager-v2';
 
-    async function initAuth() {
-        try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-            onAuthStateChanged(auth, (u) => {
-                user = u;
-                if (user) syncData();
-            });
-        } catch (err) {
-            console.error("Auth Fail", err);
-        }
-    }
-
-    function syncData() {
-        if (!db) return;
-        const q = collection(db, 'artifacts', appId, 'public', 'data', 'cars');
-        onSnapshot(q, (snapshot) => {
-            carData = snapshot.docs.map(doc => doc.data());
-            console.log("資料更新成功:", carData.length);
-        });
-    }
-
-    // 將所有外部 HTML 會用到的函數明確掛載到 window 下
+    // --- 修正：預先定義 window 函數防止 Uncaught ReferenceError ---
     window.switchTab = (tab) => {
         ['search', 'quiz', 'data'].forEach(s => {
             const sec = document.getElementById(`section-${s}`);
@@ -197,18 +153,84 @@
             activeTab.classList.add('tab-active');
             activeTab.classList.remove('text-slate-500');
         }
-        if(tab === 'quiz') window.generateQuiz();
+        if(tab === 'quiz' && typeof window.generateQuiz === 'function') window.generateQuiz();
     };
 
+    window.closeModal = () => document.getElementById('msg-modal').classList.add('hidden');
+    
+    function showMessage(t) { 
+        const modal = document.getElementById('msg-modal');
+        const content = document.getElementById('msg-content');
+        if (modal && content) {
+            content.innerText = t; 
+            modal.classList.remove('hidden');
+        }
+    }
+
+    // --- Firebase 初始化 ---
+    async function setupFirebase() {
+        let config = null;
+
+        // 1. 嘗試從系統讀取
+        if (typeof __firebase_config !== 'undefined') {
+            config = JSON.parse(__firebase_config);
+        } 
+        // 2. 如果你在 GitHub Pages，請在下方 manualConfig 貼上你的 Firebase SDK 配置
+        else {
+            const manualConfig = {
+                apiKey: "你的API_KEY",
+                authDomain: "你的專案.firebaseapp.com",
+                projectId: "你的專案ID",
+                storageBucket: "你的專案.appspot.com",
+                messagingSenderId: "...",
+                appId: "..."
+            };
+            
+            if (manualConfig.apiKey !== "你的API_KEY") {
+                config = manualConfig;
+            }
+        }
+
+        if (!config) {
+            console.warn("Firebase 配置未設定。如果您在 GitHub Pages 運行，請編輯代碼中的 manualConfig。");
+            return;
+        }
+
+        try {
+            const app = initializeApp(config);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+
+            onAuthStateChanged(auth, (u) => {
+                user = u;
+                if (user) startSync();
+            });
+        } catch (e) {
+            console.error("Firebase Setup Error:", e);
+        }
+    }
+
+    function startSync() {
+        if (!db) return;
+        const q = collection(db, 'artifacts', appId, 'public', 'data', 'cars');
+        onSnapshot(q, (snapshot) => {
+            carData = snapshot.docs.map(doc => doc.data());
+        }, (err) => console.error("Firestore Error:", err));
+    }
+
     window.importDataFromHTML = async () => {
-        if (!user || !db) return showMessage("雲端尚未就緒，請稍後再試。");
+        if (!user || !db) return showMessage("Firebase 未連線。請確認代碼中的 manualConfig 是否正確。");
         const input = document.getElementById('raw-html-input').value;
         const status = document.getElementById('import-status');
-        if(!input) return showMessage("請先貼上 HTML 內容！");
+        if(!input) return showMessage("請先貼上內容。");
 
-        status.innerText = "正在分析數據...";
-        status.className = "mt-4 text-center text-sm font-medium text-blue-600";
-
+        status.innerText = "正在處理...";
         try {
             const parser = new DOMParser();
             const docObj = parser.parseFromString(input, 'text/html');
@@ -219,8 +241,7 @@
                 const cells = row.querySelectorAll('td');
                 if (cells.length >= 6) {
                     const plate = cells[1].innerText.trim();
-                    if (!plate || plate === "車號" || plate === "Plate") continue;
-
+                    if (!plate || plate === "車號") continue;
                     const carInfo = {
                         id: cells[0].innerText.trim(),
                         plate: plate,
@@ -230,37 +251,31 @@
                         spot: cells[5].innerText.trim(),
                         updatedAt: Date.now()
                     };
-
                     const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', carInfo.plate);
                     await setDoc(carDoc, carInfo, { merge: true });
                     count++;
                 }
             }
-            status.innerText = `✅ 成功導入 ${count} 筆資料！現在可以去查詢了。`;
-            status.className = "mt-4 text-center text-sm font-medium text-emerald-600";
+            status.innerText = `成功導入 ${count} 筆！`;
         } catch (err) {
-            status.innerText = "❌ 錯誤：" + err.message;
-            status.className = "mt-4 text-center text-sm font-medium text-red-600";
+            status.innerText = "錯誤：" + err.message;
         }
     };
 
     window.handleImageUpload = async (event) => {
         const file = event.target.files[0];
-        if (!file || !db) return;
-        const currentPlate = document.getElementById('res-plate').innerText;
-        if (!currentPlate) return;
-
+        const plate = document.getElementById('res-plate').innerText;
+        if (!file || !db || !plate) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
             const base64 = e.target.result;
             try {
-                const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', currentPlate);
+                const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', plate);
                 await setDoc(carDoc, { photoBase64: base64 }, { merge: true });
                 document.getElementById('car-img').src = base64;
                 document.getElementById('car-img').classList.remove('hidden');
                 document.querySelector('#photo-display span').classList.add('hidden');
-                showMessage("照片已存入雲端！");
-            } catch (err) { showMessage("上傳失敗"); }
+            } catch (err) { showMessage("儲存圖片失敗"); }
         };
         reader.readAsDataURL(file);
     };
@@ -268,61 +283,55 @@
     window.generateQuiz = () => {
         const container = document.getElementById('quiz-options');
         if (carData.length < 4) {
-            container.innerHTML = "<p class='text-slate-400'>請先導入至少 4 筆資料才能開始測驗。</p>";
+            container.innerHTML = "資料不足。";
             return;
         }
-
         const fb = document.getElementById('quiz-feedback');
         fb.innerText = "";
         const correct = carData[Math.floor(Math.random() * carData.length)];
         document.getElementById('quiz-plate').innerText = correct.plate;
-
         let options = [correct.spot];
         while (options.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].spot;
             if(!options.includes(r)) options.push(r);
         }
         options.sort(() => Math.random() - 0.5);
-
         container.innerHTML = "";
         options.forEach(opt => {
             const b = document.createElement('button');
-            b.className = "p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xl hover:bg-blue-50 hover:border-blue-500 transition-all active:scale-95";
+            b.className = "p-5 bg-slate-50 border rounded-2xl font-bold text-xl hover:bg-blue-50";
             b.innerText = opt;
             b.onclick = () => {
                 if(opt === correct.spot) {
-                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 font-bold text-lg text-emerald-500 animate-bounce";
+                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 text-emerald-500 font-bold";
                 } else {
-                    fb.innerText = `可惜，答案是 ${correct.spot}`; fb.className = "mt-6 font-bold text-lg text-red-500";
+                    fb.innerText = `錯了，答案是 ${correct.spot}`; fb.className = "mt-6 text-red-500 font-bold";
                 }
-                document.querySelectorAll('#quiz-options button').forEach(btn => btn.disabled = true);
             };
             container.appendChild(b);
         });
     };
 
-    window.closeModal = () => document.getElementById('msg-modal').classList.add('hidden');
-    function showMessage(t) { 
-        document.getElementById('msg-content').innerText = t; 
-        document.getElementById('msg-modal').classList.remove('hidden'); 
-    }
-
-    // 搜尋監聽
     document.getElementById('search-input').addEventListener('input', (e) => {
         const val = e.target.value.toUpperCase().trim();
         const container = document.getElementById('result-container');
         const noRes = document.getElementById('no-result');
-
-        if (!val) { container.classList.add('hidden'); noRes.classList.add('hidden'); return; }
-
-        const found = carData.find(c => 
-            c.plate.toUpperCase().includes(val) || 
-            c.spot.toUpperCase().includes(val) ||
-            (c.brand && c.brand.toUpperCase().includes(val))
-        );
-
+        if (!val) { container.classList.add('hidden'); return; }
+        const found = carData.find(c => c.plate.includes(val) || c.spot.includes(val));
         if (found) {
-            displayCar(found);
+            document.getElementById('res-plate').innerText = found.plate;
+            document.getElementById('res-brand').innerText = found.brand;
+            document.getElementById('res-color').innerText = found.color;
+            document.getElementById('res-spot').innerText = found.spot;
+            document.getElementById('res-level').innerText = found.level;
+            document.getElementById('res-id').innerText = found.id;
+            const img = document.getElementById('car-img');
+            const placeholder = document.querySelector('#photo-display span');
+            if (found.photoBase64) {
+                img.src = found.photoBase64; img.classList.remove('hidden'); placeholder.classList.add('hidden');
+            } else {
+                img.classList.add('hidden'); placeholder.classList.remove('hidden');
+            }
             container.classList.remove('hidden');
             noRes.classList.add('hidden');
         } else {
@@ -331,25 +340,7 @@
         }
     });
 
-    function displayCar(car) {
-        document.getElementById('res-plate').innerText = car.plate;
-        document.getElementById('res-brand').innerText = car.brand || '---';
-        document.getElementById('res-color').innerText = car.color || '---';
-        document.getElementById('res-spot').innerText = car.spot || '---';
-        document.getElementById('res-level').innerText = (car.level || '').toUpperCase();
-        document.getElementById('res-id').innerText = car.id || '---';
-        
-        const img = document.getElementById('car-img');
-        const placeholder = document.querySelector('#photo-display span');
-        if (car.photoBase64) {
-            img.src = car.photoBase64;
-            img.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-        } else {
-            img.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-        }
-    }
+    setupFirebase();
 </script>
 </body>
 </html>
