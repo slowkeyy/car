@@ -30,9 +30,9 @@
     </header>
 
     <nav class="flex justify-center space-x-8 mb-8 border-b border-slate-200">
-        <button onclick="switchTab('search')" id="tab-search" class="pb-2 px-4 font-medium transition-all tab-active">車號查詢</button>
-        <button onclick="switchTab('quiz')" id="tab-quiz" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">隨機測驗</button>
-        <button onclick="switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
+        <button onclick="window.switchTab('search')" id="tab-search" class="pb-2 px-4 font-medium transition-all tab-active">車號查詢</button>
+        <button onclick="window.switchTab('quiz')" id="tab-quiz" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">隨機測驗</button>
+        <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
     </nav>
 
     <!-- 搜尋區塊 -->
@@ -84,7 +84,7 @@
                         </div>
                         <label class="block w-full text-center py-3 bg-slate-800 text-white rounded-xl cursor-pointer hover:bg-slate-700 transition-colors font-medium">
                             上傳/更新照片
-                            <input type="file" id="photo-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                            <input type="file" id="photo-upload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
                         </label>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
             </div>
             <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div id="quiz-feedback" class="mt-6 h-8 font-bold text-lg"></div>
-            <button onclick="generateQuiz()" class="mt-8 px-10 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-md transition-all font-bold">下一題</button>
+            <button onclick="window.generateQuiz()" class="mt-8 px-10 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-md transition-all font-bold">下一題</button>
         </div>
     </section>
 
@@ -114,7 +114,7 @@
             <h3 class="text-xl font-bold mb-4">資料導入工具</h3>
             <p class="text-sm text-slate-500 mb-4">請打開您的原始 HTML 檔案，複製全部內容（Ctrl+A 然後 Ctrl+C）並貼在下面：</p>
             <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="<html>...</html>"></textarea>
-            <button onclick="importDataFromHTML()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-md transition-all">
+            <button onclick="window.importDataFromHTML()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-md transition-all">
                 開始解析並導入雲端
             </button>
             <div id="import-status" class="mt-4 text-center text-sm font-medium"></div>
@@ -125,7 +125,7 @@
     <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 px-4">
         <div class="bg-white p-6 rounded-xl max-w-sm w-full shadow-2xl">
             <p id="msg-content" class="text-center text-slate-700 font-medium"></p>
-            <button onclick="closeModal()" class="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg">確定</button>
+            <button onclick="window.closeModal()" class="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg">確定</button>
         </div>
     </div>
 </div>
@@ -146,8 +146,6 @@
             auth = getAuth(app);
             db = getFirestore(app);
             initAuth();
-        } else {
-            console.error("Firebase Config Missing!");
         }
     } catch (e) {
         console.error("Firebase Init Error", e);
@@ -181,17 +179,25 @@
         });
     }
 
-    // 將函數掛載到 window 確保 HTML 按鈕可以呼叫
+    // 將所有外部 HTML 會用到的函數明確掛載到 window 下
     window.switchTab = (tab) => {
         ['search', 'quiz', 'data'].forEach(s => {
-            document.getElementById(`section-${s}`).classList.add('hidden');
-            document.getElementById(`tab-${s}`).classList.remove('tab-active');
-            document.getElementById(`tab-${s}`).classList.add('text-slate-500');
+            const sec = document.getElementById(`section-${s}`);
+            const tabBtn = document.getElementById(`tab-${s}`);
+            if (sec) sec.classList.add('hidden');
+            if (tabBtn) {
+                tabBtn.classList.remove('tab-active');
+                tabBtn.classList.add('text-slate-500');
+            }
         });
-        document.getElementById(`section-${tab}`).classList.remove('hidden');
-        document.getElementById(`tab-${tab}`).classList.add('tab-active');
-        document.getElementById(`tab-${tab}`).classList.remove('text-slate-500');
-        if(tab === 'quiz') generateQuiz();
+        const activeSec = document.getElementById(`section-${tab}`);
+        const activeTab = document.getElementById(`tab-${tab}`);
+        if (activeSec) activeSec.classList.remove('hidden');
+        if (activeTab) {
+            activeTab.classList.add('tab-active');
+            activeTab.classList.remove('text-slate-500');
+        }
+        if(tab === 'quiz') window.generateQuiz();
     };
 
     window.importDataFromHTML = async () => {
@@ -212,7 +218,6 @@
             for (const row of rows) {
                 const cells = row.querySelectorAll('td');
                 if (cells.length >= 6) {
-                    // Notion 格式處理：取 innerText 會抓到所有子標籤文字
                     const plate = cells[1].innerText.trim();
                     if (!plate || plate === "車號" || plate === "Plate") continue;
 
@@ -238,49 +243,6 @@
             status.className = "mt-4 text-center text-sm font-medium text-red-600";
         }
     };
-
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        const val = e.target.value.toUpperCase().trim();
-        const container = document.getElementById('result-container');
-        const noRes = document.getElementById('no-result');
-
-        if (!val) { container.classList.add('hidden'); noRes.classList.add('hidden'); return; }
-
-        const found = carData.find(c => 
-            c.plate.toUpperCase().includes(val) || 
-            c.spot.toUpperCase().includes(val) ||
-            (c.brand && c.brand.toUpperCase().includes(val))
-        );
-
-        if (found) {
-            displayCar(found);
-            container.classList.remove('hidden');
-            noRes.classList.add('hidden');
-        } else {
-            container.classList.add('hidden');
-            noRes.classList.remove('hidden');
-        }
-    });
-
-    function displayCar(car) {
-        document.getElementById('res-plate').innerText = car.plate;
-        document.getElementById('res-brand').innerText = car.brand || '---';
-        document.getElementById('res-color').innerText = car.color || '---';
-        document.getElementById('res-spot').innerText = car.spot || '---';
-        document.getElementById('res-level').innerText = (car.level || '').toUpperCase();
-        document.getElementById('res-id').innerText = car.id || '---';
-        
-        const img = document.getElementById('car-img');
-        const placeholder = document.querySelector('#photo-display span');
-        if (car.photoBase64) {
-            img.src = car.photoBase64;
-            img.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-        } else {
-            img.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-        }
-    }
 
     window.handleImageUpload = async (event) => {
         const file = event.target.files[0];
@@ -343,6 +305,50 @@
     function showMessage(t) { 
         document.getElementById('msg-content').innerText = t; 
         document.getElementById('msg-modal').classList.remove('hidden'); 
+    }
+
+    // 搜尋監聽
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const val = e.target.value.toUpperCase().trim();
+        const container = document.getElementById('result-container');
+        const noRes = document.getElementById('no-result');
+
+        if (!val) { container.classList.add('hidden'); noRes.classList.add('hidden'); return; }
+
+        const found = carData.find(c => 
+            c.plate.toUpperCase().includes(val) || 
+            c.spot.toUpperCase().includes(val) ||
+            (c.brand && c.brand.toUpperCase().includes(val))
+        );
+
+        if (found) {
+            displayCar(found);
+            container.classList.remove('hidden');
+            noRes.classList.add('hidden');
+        } else {
+            container.classList.add('hidden');
+            noRes.classList.remove('hidden');
+        }
+    });
+
+    function displayCar(car) {
+        document.getElementById('res-plate').innerText = car.plate;
+        document.getElementById('res-brand').innerText = car.brand || '---';
+        document.getElementById('res-color').innerText = car.color || '---';
+        document.getElementById('res-spot').innerText = car.spot || '---';
+        document.getElementById('res-level').innerText = (car.level || '').toUpperCase();
+        document.getElementById('res-id').innerText = car.id || '---';
+        
+        const img = document.getElementById('car-img');
+        const placeholder = document.querySelector('#photo-display span');
+        if (car.photoBase64) {
+            img.src = car.photoBase64;
+            img.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        } else {
+            img.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+        }
     }
 </script>
 </body>
