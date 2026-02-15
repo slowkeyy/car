@@ -18,27 +18,24 @@
             border-bottom: 3px solid #3b82f6;
             color: #3b82f6;
         }
-        /* 防止行動端點擊時出現藍色框 */
         * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
 
 <div id="app" class="max-w-4xl mx-auto px-4 py-8">
-    <!-- Header -->
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
         <p class="text-slate-500 mt-2">查詢、存檔與隨機考驗</p>
     </header>
 
-    <!-- Tabs Navigation -->
     <nav class="flex justify-center space-x-8 mb-8 border-b border-slate-200">
         <button onclick="switchTab('search')" id="tab-search" class="pb-2 px-4 font-medium transition-all tab-active">車號查詢</button>
         <button onclick="switchTab('quiz')" id="tab-quiz" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">隨機測驗</button>
         <button onclick="switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
     </nav>
 
-    <!-- Section: Search -->
+    <!-- 搜尋區塊 -->
     <section id="section-search" class="space-y-6">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="relative">
@@ -94,28 +91,24 @@
             </div>
         </div>
         
-        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">
-            找不到資訊。
-        </div>
+        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到資訊。</div>
     </section>
 
-    <!-- Section: Quiz -->
+    <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
             <h3 class="text-xl font-bold text-slate-600 mb-2">隨機測驗</h3>
-            <p id="quiz-question-text" class="text-slate-400 mb-6 font-medium">看車號，猜車位！</p>
-            
-            <div id="quiz-question" class="mb-8">
+            <p class="text-slate-400 mb-6 font-medium">看車號，猜車位！</p>
+            <div class="mb-8">
                 <span id="quiz-plate" class="text-5xl font-black text-blue-600">----</span>
             </div>
-
             <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div id="quiz-feedback" class="mt-6 h-8 font-bold text-lg"></div>
             <button onclick="generateQuiz()" class="mt-8 px-10 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-md transition-all font-bold">下一題</button>
         </div>
     </section>
 
-    <!-- Section: Data Import -->
+    <!-- 導入區塊 -->
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h3 class="text-xl font-bold mb-4">資料導入工具</h3>
@@ -128,7 +121,7 @@
         </div>
     </section>
 
-    <!-- Modals -->
+    <!-- 彈窗 -->
     <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 px-4">
         <div class="bg-white p-6 rounded-xl max-w-sm w-full shadow-2xl">
             <p id="msg-content" class="text-center text-slate-700 font-medium"></p>
@@ -140,49 +133,55 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 這些變數由執行環境提供，請確保不要刪除
-    const firebaseConfig = JSON.parse(__firebase_config);
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-management-system-v1';
+    // 檢查 Firebase 設定是否存在
+    let db, auth;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-manager-v2';
+
+    try {
+        if (typeof __firebase_config !== 'undefined') {
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            initAuth();
+        } else {
+            console.error("Firebase Config Missing!");
+        }
+    } catch (e) {
+        console.error("Firebase Init Error", e);
+    }
 
     let user = null;
     let carData = [];
 
-    // --- 初始化認證 ---
-    const initAuth = async () => {
+    async function initAuth() {
         try {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 await signInWithCustomToken(auth, __initial_auth_token);
             } else {
                 await signInAnonymously(auth);
             }
-        } catch (error) {
-            console.error("Auth Error:", error);
+            onAuthStateChanged(auth, (u) => {
+                user = u;
+                if (user) syncData();
+            });
+        } catch (err) {
+            console.error("Auth Fail", err);
         }
-    };
-    initAuth();
+    }
 
-    onAuthStateChanged(auth, (u) => {
-        user = u;
-        if (user) syncData();
-    });
-
-    // --- 資料同步 ---
     function syncData() {
+        if (!db) return;
         const q = collection(db, 'artifacts', appId, 'public', 'data', 'cars');
         onSnapshot(q, (snapshot) => {
             carData = snapshot.docs.map(doc => doc.data());
-            console.log("資料同步成功，共有:", carData.length, "筆資料");
-        }, (err) => {
-            console.error("Firestore Error:", err);
+            console.log("資料更新成功:", carData.length);
         });
     }
 
-    // --- UI 切換 ---
+    // 將函數掛載到 window 確保 HTML 按鈕可以呼叫
     window.switchTab = (tab) => {
         ['search', 'quiz', 'data'].forEach(s => {
             document.getElementById(`section-${s}`).classList.add('hidden');
@@ -195,14 +194,13 @@
         if(tab === 'quiz') generateQuiz();
     };
 
-    // --- 解析邏輯 (針對 Notion HTML 表格優化) ---
     window.importDataFromHTML = async () => {
-        if (!user) return showMessage("尚未連接雲端，請重新整理頁面。");
+        if (!user || !db) return showMessage("雲端尚未就緒，請稍後再試。");
         const input = document.getElementById('raw-html-input').value;
         const status = document.getElementById('import-status');
-        if(!input) return showMessage("請貼入原始 HTML 代碼。");
+        if(!input) return showMessage("請先貼上 HTML 內容！");
 
-        status.innerText = "正在分析 HTML 結構並同步至雲端...";
+        status.innerText = "正在分析數據...";
         status.className = "mt-4 text-center text-sm font-medium text-blue-600";
 
         try {
@@ -213,10 +211,9 @@
 
             for (const row of rows) {
                 const cells = row.querySelectorAll('td');
-                // Notion 導出的表格通常有 ID, 車號, 廠牌, 顏色, 樓層, 車位
                 if (cells.length >= 6) {
+                    // Notion 格式處理：取 innerText 會抓到所有子標籤文字
                     const plate = cells[1].innerText.trim();
-                    // 跳過標題行或空行
                     if (!plate || plate === "車號" || plate === "Plate") continue;
 
                     const carInfo = {
@@ -229,39 +226,30 @@
                         updatedAt: Date.now()
                     };
 
-                    // 使用車號作為 Document ID 避免重複
                     const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', carInfo.plate);
                     await setDoc(carDoc, carInfo, { merge: true });
                     count++;
                 }
             }
-            status.innerText = `✅ 導入完成！成功解析並同步 ${count} 筆車籍資料。`;
+            status.innerText = `✅ 成功導入 ${count} 筆資料！現在可以去查詢了。`;
             status.className = "mt-4 text-center text-sm font-medium text-emerald-600";
-            document.getElementById('raw-html-input').value = ""; // 清空
         } catch (err) {
-            console.error(err);
-            status.innerText = "❌ 導入失敗：" + err.message;
+            status.innerText = "❌ 錯誤：" + err.message;
             status.className = "mt-4 text-center text-sm font-medium text-red-600";
         }
     };
 
-    // --- 搜尋邏輯 ---
     document.getElementById('search-input').addEventListener('input', (e) => {
         const val = e.target.value.toUpperCase().trim();
         const container = document.getElementById('result-container');
         const noRes = document.getElementById('no-result');
 
-        if (!val) {
-            container.classList.add('hidden');
-            noRes.classList.add('hidden');
-            return;
-        }
+        if (!val) { container.classList.add('hidden'); noRes.classList.add('hidden'); return; }
 
-        // 同時支援搜車號、車位、或廠牌
         const found = carData.find(c => 
             c.plate.toUpperCase().includes(val) || 
             c.spot.toUpperCase().includes(val) ||
-            c.brand.toUpperCase().includes(val)
+            (c.brand && c.brand.toUpperCase().includes(val))
         );
 
         if (found) {
@@ -284,7 +272,6 @@
         
         const img = document.getElementById('car-img');
         const placeholder = document.querySelector('#photo-display span');
-        
         if (car.photoBase64) {
             img.src = car.photoBase64;
             img.classList.remove('hidden');
@@ -295,79 +282,57 @@
         }
     }
 
-    // --- 照片上傳 ---
     window.handleImageUpload = async (event) => {
-        if (!user) return;
         const file = event.target.files[0];
-        if (!file) return;
+        if (!file || !db) return;
+        const currentPlate = document.getElementById('res-plate').innerText;
+        if (!currentPlate) return;
 
-        // 限制圖片大小 (基礎壓縮思維)
         const reader = new FileReader();
         reader.onload = async (e) => {
             const base64 = e.target.result;
-            const currentPlate = document.getElementById('res-plate').innerText;
-            if (!currentPlate) return;
-
             try {
                 const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', currentPlate);
                 await setDoc(carDoc, { photoBase64: base64 }, { merge: true });
-                
-                // 更新 UI
                 document.getElementById('car-img').src = base64;
                 document.getElementById('car-img').classList.remove('hidden');
                 document.querySelector('#photo-display span').classList.add('hidden');
-                showMessage("照片上傳成功，已永久保存！");
-            } catch (err) {
-                console.error(err);
-                showMessage("儲存失敗，請再試一次。");
-            }
+                showMessage("照片已存入雲端！");
+            } catch (err) { showMessage("上傳失敗"); }
         };
         reader.readAsDataURL(file);
     };
 
-    // --- 測驗邏輯 ---
-    let correctAns = "";
     window.generateQuiz = () => {
+        const container = document.getElementById('quiz-options');
         if (carData.length < 4) {
-            document.getElementById('quiz-options').innerHTML = "<p class='text-slate-400'>資料不足，請先導入資料（至少需 4 筆）。</p>";
+            container.innerHTML = "<p class='text-slate-400'>請先導入至少 4 筆資料才能開始測驗。</p>";
             return;
         }
 
         const fb = document.getElementById('quiz-feedback');
         fb.innerText = "";
-        
-        // 隨機選一個正確答案
         const correct = carData[Math.floor(Math.random() * carData.length)];
-        correctAns = correct.spot;
         document.getElementById('quiz-plate').innerText = correct.plate;
 
-        // 隨機選三個錯誤答案
         let options = [correct.spot];
         while (options.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].spot;
             if(!options.includes(r)) options.push(r);
         }
-        
-        // 隨機排序
         options.sort(() => Math.random() - 0.5);
 
-        const container = document.getElementById('quiz-options');
         container.innerHTML = "";
         options.forEach(opt => {
             const b = document.createElement('button');
-            b.className = "p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xl hover:bg-blue-50 hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm active:scale-95";
+            b.className = "p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xl hover:bg-blue-50 hover:border-blue-500 transition-all active:scale-95";
             b.innerText = opt;
             b.onclick = () => {
-                if(opt === correctAns) {
-                    fb.innerText = "答對了！太厲害了 🎉";
-                    fb.className = "mt-6 h-8 font-bold text-lg text-emerald-500 animate-bounce";
-                    b.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-700');
+                if(opt === correct.spot) {
+                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 font-bold text-lg text-emerald-500 animate-bounce";
                 } else {
-                    fb.innerText = `可惜，正確車位是 ${correctAns}`;
-                    fb.className = "mt-6 h-8 font-bold text-lg text-red-500";
-                    b.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
+                    fb.innerText = `可惜，答案是 ${correct.spot}`; fb.className = "mt-6 font-bold text-lg text-red-500";
                 }
-                // 結束後禁用所有按鈕
                 document.querySelectorAll('#quiz-options button').forEach(btn => btn.disabled = true);
             };
             container.appendChild(b);
