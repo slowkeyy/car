@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>住戶車號管理系統</title>
+    <title>住戶車號管理系統 - 視覺測驗版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .glass-morphism {
@@ -17,14 +17,6 @@
         }
         * { -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .filter-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
-            padding-right: 2.5rem;
-        }
         .quiz-option {
             transition: all 0.2s;
             border: 2px solid transparent;
@@ -37,17 +29,16 @@
 <div id="app" class="max-w-4xl mx-auto px-4 py-8 pb-24">
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
-        <p class="text-slate-500 mt-2">進階管理版 (可切換排序模式)</p>
+        <p class="text-slate-500 mt-2">視覺記憶測驗版</p>
     </header>
 
     <nav class="flex justify-center space-x-4 md:space-x-8 mb-8 border-b border-slate-200 overflow-x-auto hide-scrollbar whitespace-nowrap text-sm md:text-base">
         <button onclick="window.switchTab('search')" id="tab-search" class="pb-2 px-2 md:px-4 font-medium transition-all tab-active">車號查詢</button>
-        <button onclick="window.switchTab('quiz')" id="tab-quiz" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">隨機測驗</button>
+        <button onclick="window.switchTab('quiz')" id="tab-quiz" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">視覺測驗</button>
         <button onclick="window.switchTab('manage')" id="tab-manage" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">車輛管理</button>
         <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
     </nav>
 
-    <!-- 搜尋區塊 -->
     <section id="section-search" class="space-y-6">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="relative">
@@ -60,7 +51,6 @@
                 </div>
             </div>
         </div>
-        
         <div id="result-container" class="hidden animate-in fade-in duration-300">
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100">
                 <div class="flex flex-col md:flex-row gap-8">
@@ -70,27 +60,15 @@
                             <span id="res-floor" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold uppercase"></span>
                         </div>
                         <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs text-slate-400 uppercase font-bold">廠牌</p>
-                                <p id="res-brand" class="text-xl font-semibold text-slate-700"></p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs text-slate-400 uppercase font-bold">顏色</p>
-                                <p id="res-color" class="text-xl font-semibold text-slate-700"></p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs text-slate-400 uppercase font-bold">車位</p>
-                                <p id="res-spot" class="text-xl font-semibold text-slate-700"></p>
-                            </div>
-                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                <p class="text-xs text-slate-400 uppercase font-bold">住戶編號</p>
-                                <p id="res-id" class="text-xl font-semibold text-slate-700"></p>
-                            </div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">廠牌</p><p id="res-brand" class="text-xl font-semibold text-slate-700"></p></div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">顏色</p><p id="res-color" class="text-xl font-semibold text-slate-700"></p></div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">車位</p><p id="res-spot" class="text-xl font-semibold text-slate-700"></p></div>
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100"><p class="text-xs text-slate-400 uppercase font-bold">住戶編號</p><p id="res-id" class="text-xl font-semibold text-slate-700"></p></div>
                         </div>
                     </div>
-                    <div class="w-full md:w-64 space-y-4">
-                        <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative">
-                            <span class="text-slate-400 text-sm text-center px-4">尚未上傳照片</span>
+                    <div class="w-full md:w-64">
+                        <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative">
+                            <span class="text-slate-400 text-sm">無照片</span>
                             <img id="car-img" class="absolute inset-0 w-full h-full object-cover hidden">
                         </div>
                     </div>
@@ -100,128 +78,84 @@
         <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料。</div>
     </section>
 
-    <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
-            <h3 class="text-xl font-bold mb-2">車位對應測驗</h3>
-            <p class="text-slate-400 text-sm mb-6">看車位號碼，選出正確的車牌號碼</p>
+            <h3 class="text-xl font-bold mb-2">視覺辨識測驗</h3>
+            <p class="text-slate-400 text-sm mb-6">根據以下車輛資訊，選出正確的【車位】</p>
             
-            <div id="quiz-question-container" class="mb-8">
-                <div class="text-sm text-blue-500 font-bold uppercase tracking-wider mb-2">目前題目車位</div>
-                <div id="quiz-question-spot" class="text-5xl font-black text-slate-800 tracking-tighter">---</div>
+            <div id="quiz-question-container" class="mb-8 flex flex-col items-center space-y-4">
+                <div id="quiz-img-container" class="w-48 h-48 bg-slate-100 rounded-2xl overflow-hidden border-4 border-white shadow-lg hidden">
+                    <img id="quiz-question-img" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <div id="quiz-question-plate" class="text-5xl font-black text-slate-800 tracking-tighter mb-2">---</div>
+                    <div class="flex justify-center gap-2">
+                        <span id="quiz-question-brand" class="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold">---</span>
+                        <span id="quiz-question-color" class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold">---</span>
+                    </div>
+                </div>
             </div>
 
-            <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- 選項會動態插入 -->
-            </div>
+            <div id="quiz-options" class="grid grid-cols-2 gap-4"></div>
 
             <div id="quiz-feedback-box" class="mt-8 hidden animate-in slide-in-from-bottom-4 duration-300">
                  <div id="quiz-feedback" class="p-4 rounded-xl font-bold mb-4"></div>
-                 <button onclick="window.generateQuiz()" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:bg-slate-900 transition-all">下一題</button>
+                 <button onclick="window.generateQuiz()" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:bg-slate-900 transition-all text-lg">下一題</button>
             </div>
             
-            <div id="quiz-empty-state" class="hidden py-12">
-                <p class="text-slate-400 italic">目前沒有車位資料，請先導入資料或新增車輛。</p>
-            </div>
+            <div id="quiz-empty-state" class="hidden py-12 text-slate-400 italic">需至少 4 筆有車位的資料才能開始測驗。</div>
         </div>
     </section>
 
-    <!-- 車輛管理區塊 -->
     <section id="section-manage" class="hidden space-y-4">
         <div class="flex justify-between items-center">
             <h3 class="text-xl font-bold text-slate-800">車輛清單 (<span id="manage-count">0</span>)</h3>
             <button onclick="window.openEditModal(null)" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold shadow hover:bg-blue-700">新增車輛</button>
         </div>
-
-        <!-- 進階篩選與排序 -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">樓層</label>
-                    <select id="filter-floor" onchange="window.renderManageList()" class="filter-select w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                        <option value="all">所有樓層</option>
-                        <option value="B1">B1</option>
-                        <option value="B2">B2</option>
-                        <option value="B3">B3</option>
-                        <option value="B4">B4</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">品牌</label>
-                    <select id="filter-brand" onchange="window.renderManageList()" class="filter-select w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                        <option value="all">所有品牌</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1 ml-1">顏色</label>
-                    <select id="filter-color" onchange="window.renderManageList()" class="filter-select w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm">
-                        <option value="all">所有顏色</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-blue-500 uppercase mb-1 ml-1">排序模式</label>
-                    <select id="sort-mode" onchange="window.renderManageList()" class="filter-select w-full p-2 bg-blue-50 border border-blue-100 rounded-lg text-sm font-bold text-blue-600">
-                        <option value="logic">樓層優先 (B1>B2)</option>
-                        <option value="spot">車位編號 (15D>14C)</option>
-                    </select>
-                </div>
-            </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm grid grid-cols-2 md:grid-cols-4 gap-3">
+            <select id="filter-floor" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有樓層</option><option value="B1">B1</option><option value="B2">B2</option><option value="B3">B3</option><option value="B4">B4</option></select>
+            <select id="filter-brand" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有品牌</option></select>
+            <select id="filter-color" onchange="window.renderManageList()" class="p-2 bg-slate-50 border rounded-lg text-sm"><option value="all">所有顏色</option></select>
+            <select id="sort-mode" onchange="window.renderManageList()" class="p-2 bg-blue-50 border-blue-100 rounded-lg text-sm font-bold text-blue-600"><option value="logic">樓層優先</option><option value="spot">車位優先</option></select>
         </div>
-        
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead class="bg-slate-50 border-b border-slate-200">
-                        <tr>
-                            <th class="p-4 text-xs font-bold text-slate-400 uppercase w-20">照片</th>
-                            <th class="p-4 text-xs font-bold text-slate-400 uppercase w-32">車牌</th>
-                            <th class="p-4 text-xs font-bold text-slate-400 uppercase w-24">車位</th>
-                            <th class="p-4 text-xs font-bold text-slate-400 uppercase">廠牌/顏色</th>
-                            <th class="p-4 text-xs font-bold text-slate-400 uppercase text-right w-20">編輯</th>
-                        </tr>
-                    </thead>
-                    <tbody id="manage-list" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-100 overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[500px]">
+                <thead class="bg-slate-50 border-b"><tr class="text-xs font-bold text-slate-400 uppercase"><th class="p-4">車牌/照片</th><th class="p-4">車位</th><th class="p-4">廠牌顏色</th><th class="p-4 text-right">編輯</th></tr></thead>
+                <tbody id="manage-list" class="divide-y"></tbody>
+            </table>
         </div>
     </section>
 
-    <!-- 資料導入區塊 -->
     <section id="section-data" class="hidden space-y-6">
-        <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
-            <h3 class="text-xl font-bold mb-4">資料導入</h3>
-            <textarea id="raw-html-input" rows="8" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4" placeholder="貼上 Notion HTML 或文字數據..."></textarea>
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
+            <h3 class="text-xl font-bold mb-4">資料管理</h3>
+            <textarea id="raw-html-input" rows="5" class="w-full p-4 border rounded-xl font-mono text-xs mb-4" placeholder="貼上資料..."></textarea>
             <div class="flex gap-4">
-                <button onclick="window.importDataFromHTML()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold">開始導入</button>
-                <button onclick="window.clearLocalData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold">清空資料庫</button>
+                <button onclick="window.importDataFromHTML()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold">導入資料</button>
+                <button onclick="window.clearLocalData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold">清空</button>
             </div>
-            <div id="import-status" class="mt-4 text-center"></div>
         </div>
     </section>
 
-    <!-- 編輯彈窗 -->
     <div id="edit-modal" class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 px-4 backdrop-blur-sm">
-        <div class="bg-white p-6 md:p-8 rounded-2xl max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="modal-title" class="text-2xl font-bold">編輯車輛</h3>
-                <button onclick="window.closeEditModal()" class="text-slate-400">✕</button>
-            </div>
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6"><h3 id="modal-title" class="text-2xl font-bold">編輯車輛</h3><button onclick="window.closeEditModal()">✕</button></div>
             <div class="space-y-4">
                 <div class="flex flex-col items-center">
-                    <div id="modal-photo-preview" class="w-32 h-32 bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative">
+                    <div id="modal-photo-preview" class="w-32 h-32 bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed overflow-hidden relative">
                         <img id="modal-preview-img" class="absolute inset-0 w-full h-full object-cover hidden">
-                        <span class="text-[10px] text-slate-400">無照片</span>
+                        <span class="text-xs text-slate-400">預覽圖</span>
                     </div>
                     <input type="file" accept="image/*" onchange="window.previewImage(event)" id="file-input" class="hidden">
-                    <button onclick="document.getElementById('file-input').click()" class="mt-2 text-xs text-blue-600 font-bold">上傳照片</button>
+                    <button onclick="document.getElementById('file-input').click()" class="mt-2 text-xs text-blue-600 font-bold underline">上傳照片</button>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="edit-plate" placeholder="車牌 (必填)" class="p-3 border rounded-xl font-bold">
+                    <input type="text" id="edit-plate" placeholder="車牌" class="p-3 border rounded-xl font-bold">
                     <input type="text" id="edit-spot" placeholder="車位" class="p-3 border rounded-xl font-bold">
                     <input type="text" id="edit-brand" placeholder="廠牌" class="p-3 border rounded-xl">
                     <input type="text" id="edit-color" placeholder="顏色" class="p-3 border rounded-xl">
-                    <input type="text" id="edit-floor" placeholder="樓層 (如 B2)" class="p-3 border rounded-xl">
-                    <input type="text" id="edit-id" placeholder="住戶編號" class="p-3 border rounded-xl">
+                    <input type="text" id="edit-floor" placeholder="樓層" class="p-3 border rounded-xl">
+                    <input type="text" id="edit-id" placeholder="編號" class="p-3 border rounded-xl">
                 </div>
                 <div class="flex gap-4 mt-6">
                     <button id="delete-btn" onclick="window.deleteCurrentCar()" class="px-4 py-3 bg-red-50 text-red-600 rounded-xl font-bold">刪除</button>
@@ -231,11 +165,10 @@
         </div>
     </div>
 
-    <!-- 訊息提示 -->
     <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-[60]">
-        <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl text-center">
-            <p id="msg-content" class="text-slate-700 font-bold"></p>
-            <button onclick="window.closeModal()" class="mt-6 w-full py-3 bg-blue-600 text-white rounded-xl font-bold">關閉</button>
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center">
+            <p id="msg-content" class="font-bold"></p>
+            <button onclick="window.closeModal()" class="mt-6 w-full py-3 bg-blue-600 text-white rounded-xl font-bold">確定</button>
         </div>
     </div>
 </div>
@@ -246,11 +179,10 @@
     let currentPreviewBase64 = null;
     let quizAnswer = null;
 
-    // 分頁切換
+    // 基本導覽
     window.switchTab = (tab) => {
         ['search', 'quiz', 'manage', 'data'].forEach(s => {
             document.getElementById(`section-${s}`).classList.add('hidden');
-            document.getElementById(`tab-${s}`).classList.remove('tab-active');
             document.getElementById(`tab-${s}`).className = "pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500";
         });
         document.getElementById(`section-${tab}`).classList.remove('hidden');
@@ -261,10 +193,7 @@
     };
 
     window.closeModal = () => document.getElementById('msg-modal').classList.add('hidden');
-    function showMsg(t) {
-        document.getElementById('msg-content').innerText = t;
-        document.getElementById('msg-modal').classList.remove('hidden');
-    }
+    function showMsg(t) { document.getElementById('msg-content').innerText = t; document.getElementById('msg-modal').classList.remove('hidden'); }
 
     // 搜尋邏輯
     document.getElementById('search-input').addEventListener('input', (e) => {
@@ -288,11 +217,10 @@
         } else { container.classList.add('hidden'); noRes.classList.remove('hidden'); }
     });
 
-    // 隨機測驗邏輯
+    // --- 隨機測驗核心邏輯 (視覺版) ---
     window.generateQuiz = () => {
         const quizData = carData.filter(c => c.spot && c.plate);
         const optionsContainer = document.getElementById('quiz-options');
-        const questionSpot = document.getElementById('quiz-question-spot');
         const feedbackBox = document.getElementById('quiz-feedback-box');
         const emptyState = document.getElementById('quiz-empty-state');
         const questionContainer = document.getElementById('quiz-question-container');
@@ -302,31 +230,42 @@
 
         if (quizData.length < 4) {
             questionContainer.classList.add('hidden');
-            optionsContainer.classList.add('hidden');
             emptyState.classList.remove('hidden');
             return;
         }
 
         emptyState.classList.add('hidden');
         questionContainer.classList.remove('hidden');
-        optionsContainer.classList.remove('hidden');
 
-        // 隨機挑選一題
+        // 挑選隨機車輛作為題目
         const target = quizData[Math.floor(Math.random() * quizData.length)];
-        quizAnswer = target.plate;
-        questionSpot.innerText = target.spot;
+        quizAnswer = target.spot;
 
-        // 產生干擾選項
-        let options = [target.plate];
+        // 更新題目視覺
+        document.getElementById('quiz-question-plate').innerText = target.plate;
+        document.getElementById('quiz-question-brand').innerText = target.brand || '未知品牌';
+        document.getElementById('quiz-question-color').innerText = target.color || '未知顏色';
+        
+        const imgContainer = document.getElementById('quiz-img-container');
+        const qImg = document.getElementById('quiz-question-img');
+        if (target.photoBase64) {
+            qImg.src = target.photoBase64;
+            imgContainer.classList.remove('hidden');
+        } else {
+            imgContainer.classList.add('hidden');
+        }
+
+        // 產生選項 (正確車位 + 3個隨機錯誤車位)
+        let options = [target.spot];
         while (options.length < 4) {
-            const randomPlate = quizData[Math.floor(Math.random() * quizData.length)].plate;
-            if (!options.includes(randomPlate)) options.push(randomPlate);
+            const randomSpot = quizData[Math.floor(Math.random() * quizData.length)].spot;
+            if (!options.includes(randomSpot)) options.push(randomSpot);
         }
         options.sort(() => Math.random() - 0.5);
 
         options.forEach(opt => {
             const btn = document.createElement('button');
-            btn.className = 'quiz-option p-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm';
+            btn.className = 'quiz-option p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xl font-black text-slate-700 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm';
             btn.innerText = opt;
             btn.onclick = () => window.checkQuiz(opt, btn);
             optionsContainer.appendChild(btn);
@@ -337,31 +276,27 @@
         const feedbackBox = document.getElementById('quiz-feedback-box');
         const feedback = document.getElementById('quiz-feedback');
         const allBtns = document.querySelectorAll('.quiz-option');
-        
         allBtns.forEach(b => b.disabled = true);
 
         if (selected === quizAnswer) {
-            btn.classList.replace('bg-slate-50', 'bg-green-100');
-            btn.classList.replace('border-slate-100', 'border-green-500');
-            feedback.innerText = "答對了！太厲害了！";
+            btn.className = btn.className.replace('bg-slate-50', 'bg-green-100 border-green-500 text-green-700');
+            feedback.innerText = "答對了！記性真好 ✨";
             feedback.className = "p-4 rounded-xl font-bold mb-4 bg-green-50 text-green-700 border border-green-200";
         } else {
-            btn.classList.replace('bg-slate-50', 'bg-red-100');
-            btn.classList.replace('border-slate-100', 'border-red-500');
-            feedback.innerText = `答錯了，正確答案是：${quizAnswer}`;
+            btn.className = btn.className.replace('bg-slate-50', 'bg-red-100 border-red-500 text-red-700');
+            feedback.innerText = `答錯了，正確車位是：${quizAnswer}`;
             feedback.className = "p-4 rounded-xl font-bold mb-4 bg-red-50 text-red-700 border border-red-200";
         }
         feedbackBox.classList.remove('hidden');
     };
 
-    // 編輯與清單管理 (其餘邏輯維持不變)
+    // 編輯管理邏輯 (保持穩定)
     window.openEditModal = (plate = null) => {
         currentEditPlate = plate;
         currentPreviewBase64 = null;
-        const delBtn = document.getElementById('delete-btn');
+        document.getElementById('modal-preview-img').classList.add('hidden');
         if (plate) {
             const car = carData.find(c => c.plate === plate);
-            delBtn.classList.remove('hidden');
             document.getElementById('edit-plate').value = car.plate;
             document.getElementById('edit-spot').value = car.spot || '';
             document.getElementById('edit-brand').value = car.brand || '';
@@ -372,11 +307,11 @@
                 document.getElementById('modal-preview-img').src = car.photoBase64;
                 document.getElementById('modal-preview-img').classList.remove('hidden');
                 currentPreviewBase64 = car.photoBase64;
-            } else { document.getElementById('modal-preview-img').classList.add('hidden'); }
+            }
+            document.getElementById('delete-btn').classList.remove('hidden');
         } else {
-            delBtn.classList.add('hidden');
             ['edit-plate','edit-spot','edit-brand','edit-color','edit-floor','edit-id'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('modal-preview-img').classList.add('hidden');
+            document.getElementById('delete-btn').classList.add('hidden');
         }
         document.getElementById('edit-modal').classList.remove('hidden');
     };
@@ -397,7 +332,7 @@
 
     window.saveCarData = () => {
         const plate = document.getElementById('edit-plate').value.trim().toUpperCase();
-        if(!plate) return showMsg("請輸入車牌！");
+        if(!plate) return showMsg("請輸入車牌");
         const car = {
             id: document.getElementById('edit-id').value,
             plate: plate,
@@ -411,12 +346,11 @@
             const idx = carData.findIndex(c => c.plate === currentEditPlate);
             carData[idx] = car;
         } else {
-            if(carData.some(c => c.plate === plate)) return showMsg("車牌已存在！");
+            if(carData.some(c => c.plate === plate)) return showMsg("重複車牌");
             carData.push(car);
         }
         localStorage.setItem('local_car_db', JSON.stringify(carData));
         window.closeEditModal();
-        window.updateFilterOptions();
         window.renderManageList();
     };
 
@@ -433,14 +367,8 @@
         const colors = [...new Set(carData.map(c => c.color).filter(c => c))].sort();
         const bSelect = document.getElementById('filter-brand');
         const cSelect = document.getElementById('filter-color');
-        const bVal = bSelect.value;
-        const cVal = cSelect.value;
-        bSelect.innerHTML = '<option value="all">所有品牌</option>';
-        brands.forEach(b => bSelect.innerHTML += `<option value="${b}">${b}</option>`);
-        cSelect.innerHTML = '<option value="all">所有顏色</option>';
-        colors.forEach(c => cSelect.innerHTML += `<option value="${c}">${c}</option>`);
-        bSelect.value = brands.includes(bVal) ? bVal : 'all';
-        cSelect.value = colors.includes(cVal) ? cVal : 'all';
+        bSelect.innerHTML = '<option value="all">所有品牌</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
+        cSelect.innerHTML = '<option value="all">所有顏色</option>' + colors.map(c => `<option value="${c}">${c}</option>`).join('');
     };
 
     window.renderManageList = () => {
@@ -450,85 +378,59 @@
         const sortMode = document.getElementById('sort-mode').value;
 
         let filtered = carData.filter(c => {
-            const mF = floorF === 'all' || (c.floor && c.floor.toUpperCase() === floorF);
+            const mF = floorF === 'all' || (c.floor === floorF);
             const mB = brandF === 'all' || c.brand === brandF;
             const mC = colorF === 'all' || c.color === colorF;
             return mF && mB && mC;
         });
 
         filtered.sort((a, b) => {
-            if (sortMode === 'logic') {
-                const fA = a.floor || "";
-                const fB = b.floor || "";
-                if (fA !== fB) return fA.localeCompare(fB);
-                return (a.spot || "").localeCompare(b.spot || "");
-            } else {
-                return (a.spot || "").localeCompare(b.spot || "");
-            }
+            if (sortMode === 'logic') return (a.floor || "").localeCompare(b.floor || "") || (a.spot || "").localeCompare(b.spot || "");
+            return (a.spot || "").localeCompare(b.spot || "");
         });
 
         document.getElementById('manage-count').innerText = filtered.length;
         const list = document.getElementById('manage-list');
-        list.innerHTML = "";
-        filtered.forEach(c => {
-            list.innerHTML += `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-4">
-                        <div class="w-10 h-10 rounded-lg bg-slate-100 overflow-hidden border">
+        list.innerHTML = filtered.map(c => `
+            <tr>
+                <td class="p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded bg-slate-100 overflow-hidden border">
                             ${c.photoBase64 ? `<img src="${c.photoBase64}" class="w-full h-full object-cover">` : ''}
                         </div>
-                    </td>
-                    <td class="p-4 font-bold">${c.plate}</td>
-                    <td class="p-4">
-                        <div class="text-blue-600 font-bold">${c.spot || '-'}</div>
-                        <div class="text-[10px] text-slate-400 font-bold">${c.floor || ''}</div>
-                    </td>
-                    <td class="p-4 text-sm text-slate-500">${c.brand || ''} / ${c.color || ''}</td>
-                    <td class="p-4 text-right">
-                        <button onclick="window.openEditModal('${c.plate}')" class="text-blue-500 font-bold">編輯</button>
-                    </td>
-                </tr>
-            `;
-        });
+                        <span class="font-bold">${c.plate}</span>
+                    </div>
+                </td>
+                <td class="p-4"><span class="text-blue-600 font-bold">${c.spot || '-'}</span></td>
+                <td class="p-4 text-sm text-slate-500">${c.brand || ''} ${c.color || ''}</td>
+                <td class="p-4 text-right"><button onclick="window.openEditModal('${c.plate}')" class="text-blue-500 font-bold">編輯</button></td>
+            </tr>
+        `).join('');
     };
 
     window.importDataFromHTML = () => {
         const input = document.getElementById('raw-html-input').value;
         if(!input) return;
         try {
-            let batch = [];
             const parser = new DOMParser();
             const doc = parser.parseFromString(input, 'text/html');
             const rows = doc.querySelectorAll('tr');
+            let batch = [];
             rows.forEach(r => {
                 const tds = r.querySelectorAll('td');
                 if(tds.length >= 6) {
                     const plate = tds[1].innerText.trim().toUpperCase();
                     if(plate && plate !== "車號") {
-                        batch.push({
-                            id: tds[0].innerText.trim(),
-                            plate: plate,
-                            brand: tds[2].innerText.trim(),
-                            color: tds[3].innerText.trim(),
-                            floor: tds[4].innerText.trim().toUpperCase(),
-                            spot: tds[5].innerText.trim().toUpperCase(),
-                            photoBase64: null
-                        });
+                        batch.push({ id: tds[0].innerText.trim(), plate: plate, brand: tds[2].innerText.trim(), color: tds[3].innerText.trim(), floor: tds[4].innerText.trim().toUpperCase(), spot: tds[5].innerText.trim().toUpperCase(), photoBase64: null });
                     }
                 }
             });
-            if(batch.length > 0) {
-                carData = batch;
-                localStorage.setItem('local_car_db', JSON.stringify(carData));
-                showMsg(`導入成功 ${batch.length} 筆！`);
-                window.renderManageList();
-            }
-        } catch(e) { showMsg("格式錯誤"); }
+            if(batch.length > 0) { carData = batch; localStorage.setItem('local_car_db', JSON.stringify(carData)); showMsg(`成功導入 ${batch.length} 筆`); window.renderManageList(); }
+        } catch(e) { showMsg("格式有誤"); }
     };
     
-    window.clearLocalData = () => { if(confirm("確定清空？")) { localStorage.removeItem('local_car_db'); location.reload(); }};
+    window.clearLocalData = () => { if(confirm("確定清空所有資料？")) { localStorage.removeItem('local_car_db'); location.reload(); }};
     
-    // 初始化
     window.renderManageList();
 </script>
 </body>
