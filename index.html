@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>住戶車號管理系統 - 住戶記憶測驗</title>
+    <title>住戶車號管理系統 - 多筆查詢優化</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
@@ -13,6 +13,7 @@
         .correct-anim { animation: pulse 0.5s ease-in-out; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .result-card { min-width: 280px; scroll-snap-align: start; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
@@ -20,7 +21,7 @@
 <div id="app" class="max-w-4xl mx-auto px-4 py-8 pb-24">
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
-        <p class="text-slate-500 text-sm mt-1">住戶編號記憶強化模式</p>
+        <p class="text-slate-500 text-sm mt-1">支持多筆結果查詢</p>
     </header>
 
     <nav class="flex justify-center space-x-4 mb-8 border-b border-slate-200 overflow-x-auto hide-scrollbar whitespace-nowrap">
@@ -32,29 +33,16 @@
     <!-- 查詢分頁 -->
     <section id="section-search">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
-            <input type="text" id="search-input" placeholder="輸入車號、住戶或車位..." class="w-full px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+            <input type="text" id="search-input" placeholder="輸入車號 (如 1111)、住戶或車位..." class="w-full px-4 py-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-lg">
+            <p id="search-stats" class="text-xs text-slate-400 mt-2 ml-1 hidden"></p>
         </div>
-        <div id="result-container" class="hidden mt-6 animate-in fade-in">
-            <div class="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row gap-6">
-                <div class="flex-1 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h2 id="res-plate" class="text-4xl font-black text-blue-600"></h2>
-                        <span id="res-floor" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-bold"></span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">品牌</p><p id="res-brand" class="text-lg font-semibold"></p></div>
-                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">顏色</p><p id="res-color" class="text-lg font-semibold"></p></div>
-                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">車位</p><p id="res-spot" class="text-lg font-semibold text-blue-600"></p></div>
-                        <div class="p-3 bg-slate-50 rounded-xl"><p class="text-xs text-slate-400 font-bold">住戶</p><p id="res-id" class="text-lg font-semibold"></p></div>
-                    </div>
-                </div>
-                <div id="photo-display" class="w-full md:w-48 aspect-square bg-slate-100 rounded-xl overflow-hidden border flex items-center justify-center">
-                    <img id="car-img" class="w-full h-full object-cover hidden">
-                    <span class="text-slate-400 text-sm">無照片</span>
-                </div>
-            </div>
+        
+        <!-- 多筆結果容器 -->
+        <div id="result-container" class="mt-6 flex flex-col gap-6">
+            <!-- 結果會動態插入到這裡 -->
         </div>
-        <div id="no-result" class="hidden text-center py-12 text-slate-400">找不到相關資料。</div>
+
+        <div id="no-result" class="hidden text-center py-12 text-slate-400 font-medium">找不到相關資料。</div>
     </section>
 
     <!-- 測驗分頁 -->
@@ -70,7 +58,6 @@
                 </div>
             </div>
             <div id="quiz-q-box" class="mb-8">
-                <!-- 圖片顯示區 -->
                 <div class="w-48 h-48 bg-slate-50 mx-auto rounded-2xl mb-4 overflow-hidden border-2 border-white shadow-lg flex items-center justify-center">
                     <img id="quiz-q-img" class="w-full h-full object-cover hidden">
                     <div id="quiz-q-noimg" class="h-full flex flex-col items-center justify-center text-slate-300">
@@ -233,15 +220,13 @@
         {spot:"396", plate:"BZK-0028", brand:"porshe", color:"黃", floor:"b4", id:"24B"},
         {spot:"394", plate:"BBF-9818", brand:"benz", color:"白", floor:"b4", id:"16D"},
         {spot:"392", plate:"BNU-5578", brand:"porshe", color:"白", floor:"b4", id:"20D"},
-        {spot:"390", plate:"AAG-2787", brand:"porshe", color:"綠", floor:"b4", id:"31CD"},
-        {spot:"26", plate:"CAN-8789", brand:"benz", color:"黑", floor:"b2", id:"26A"},
-        {spot:"26", plate:"AND-6666", brand:"benz", color:"黑", floor:"b2", id:"26A"}
+        {spot:"390", plate:"AAG-2787", brand:"porshe", color:"綠", floor:"b4", id:"31CD"}
     ];
 
-    let carData = JSON.parse(localStorage.getItem('car_db_v4')) || INITIAL_DB;
+    let carData = JSON.parse(localStorage.getItem('car_db_v5')) || INITIAL_DB;
     let quizState = { score: 0, answered: [], currentTarget: null };
-    let currentEditPlate = null;
     let currentImgBase64 = null;
+    let currentEditPlate = null;
 
     window.switchTab = (tab) => {
         ['search', 'quiz', 'manage'].forEach(t => {
@@ -254,31 +239,66 @@
         if(tab === 'quiz') resetQuiz();
     };
 
-    // --- 搜尋功能 ---
+    // --- 搜尋功能 (優化：支持多筆結果) ---
     document.getElementById('search-input').addEventListener('input', (e) => {
         const v = e.target.value.toUpperCase().trim();
-        const res = document.getElementById('result-container');
-        const no = document.getElementById('no-result');
-        if(!v) { res.classList.add('hidden'); no.classList.add('hidden'); return; }
+        const container = document.getElementById('result-container');
+        const noRes = document.getElementById('no-result');
+        const stats = document.getElementById('search-stats');
         
-        const f = carData.find(c => c.plate.includes(v) || c.spot.includes(v) || c.id.toUpperCase().includes(v));
-        if(f) {
-            document.getElementById('res-plate').innerText = f.plate;
-            document.getElementById('res-brand').innerText = f.brand;
-            document.getElementById('res-color').innerText = f.color;
-            document.getElementById('res-spot').innerText = f.spot;
-            document.getElementById('res-floor').innerText = f.floor.toUpperCase();
-            document.getElementById('res-id').innerText = f.id;
-            const img = document.getElementById('car-img');
-            if(f.photoBase64) { img.src = f.photoBase64; img.classList.remove('hidden'); }
-            else img.classList.add('hidden');
-            res.classList.remove('hidden'); no.classList.add('hidden');
+        container.innerHTML = '';
+        if(!v) { 
+            noRes.classList.add('hidden'); 
+            stats.classList.add('hidden');
+            return; 
+        }
+        
+        // 使用 filter 找出所有符合條件的車輛
+        const results = carData.filter(c => 
+            c.plate.includes(v) || 
+            c.spot.includes(v) || 
+            c.id.toUpperCase().includes(v)
+        );
+
+        if(results.length > 0) {
+            noRes.classList.add('hidden');
+            stats.innerText = `找到 ${results.length} 筆結果`;
+            stats.classList.remove('hidden');
+
+            results.forEach(f => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-2xl shadow-lg border border-slate-100 flex flex-col md:flex-row gap-6 animate-in slide-in-from-bottom-2 duration-300";
+                
+                const photoHtml = f.photoBase64 
+                    ? `<img src="${f.photoBase64}" class="w-full h-full object-cover">`
+                    : `<span class="text-slate-300 text-xs">無照片</span>`;
+
+                card.innerHTML = `
+                    <div class="flex-1 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-3xl font-black text-blue-600">${f.plate}</h2>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold uppercase">${f.floor}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-slate-50 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">住戶</p><p class="text-lg font-black text-slate-800">${f.id}</p></div>
+                            <div class="p-3 bg-slate-50 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">車位</p><p class="text-lg font-bold text-blue-600">${f.spot}</p></div>
+                            <div class="p-3 bg-slate-50 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">品牌</p><p class="text-sm font-semibold">${f.brand}</p></div>
+                            <div class="p-3 bg-slate-50 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">顏色</p><p class="text-sm font-semibold">${f.color}</p></div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-40 aspect-square bg-slate-50 rounded-xl overflow-hidden border flex items-center justify-center shrink-0">
+                        ${photoHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         } else {
-            res.classList.add('hidden'); no.classList.remove('hidden');
+            stats.classList.add('hidden');
+            noRes.classList.remove('hidden');
         }
     });
 
-    // --- 測驗功能 (車牌 -> 住戶) ---
+    // --- 測驗功能 ---
     function resetQuiz() {
         quizState.score = 0;
         quizState.answered = [];
@@ -291,9 +311,6 @@
     window.generateQuiz = () => {
         const options = document.getElementById('quiz-options');
         const feedbackBox = document.getElementById('quiz-feedback-box');
-        const qImg = document.getElementById('quiz-q-img');
-        const qNoImg = document.getElementById('quiz-q-noimg');
-        
         feedbackBox.classList.add('hidden');
         options.innerHTML = '';
 
@@ -304,9 +321,10 @@
         quizState.currentTarget = target;
 
         document.getElementById('quiz-q-plate').innerText = target.plate;
-        document.getElementById('quiz-q-info').innerText = `${target.brand} ${target.color}`;
+        document.getElementById('quiz-q-info').innerText = `${target.brand} | ${target.color}`;
         
-        // 圖片顯示
+        const qImg = document.getElementById('quiz-q-img');
+        const qNoImg = document.getElementById('quiz-q-noimg');
         if(target.photoBase64) {
             qImg.src = target.photoBase64;
             qImg.classList.remove('hidden');
@@ -316,66 +334,51 @@
             qNoImg.classList.remove('hidden');
         }
 
-        // 隨機住戶選項
         let opts = [target.id];
         while(opts.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].id;
-            // 避免重複選項且選項要不同於正確答案
             if(!opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
 
         opts.forEach(opt => {
             const btn = document.createElement('button');
-            btn.className = 'quiz-option p-5 bg-white border-2 border-slate-100 rounded-2xl text-2xl font-black text-slate-700 shadow-sm hover:border-blue-200 hover:bg-blue-50 transition-all';
+            btn.className = 'quiz-option p-5 bg-white border-2 border-slate-100 rounded-2xl text-2xl font-black text-slate-700 shadow-sm hover:border-blue-200 hover:bg-blue-50';
             btn.innerText = opt;
-            btn.onclick = () => checkQuiz(opt, btn);
+            btn.onclick = () => {
+                const allBtns = document.querySelectorAll('.quiz-option');
+                allBtns.forEach(b => b.disabled = true);
+                if(opt === target.id) {
+                    btn.classList.add('bg-green-500', 'text-white', 'border-green-500', 'correct-anim');
+                    quizState.score++;
+                    quizState.answered.push(target.plate);
+                    document.getElementById('quiz-feedback').innerText = "正確！";
+                    document.getElementById('quiz-feedback').className = "p-4 rounded-xl font-bold mb-4 bg-green-50 text-green-700";
+                } else {
+                    btn.classList.add('bg-red-500', 'text-white', 'border-red-500');
+                    document.getElementById('quiz-feedback').innerText = `錯誤，正確住戶是 ${target.id}`;
+                    document.getElementById('quiz-feedback').className = "p-4 rounded-xl font-bold mb-4 bg-red-50 text-red-700";
+                }
+                document.getElementById('quiz-score').innerText = quizState.score;
+                document.getElementById('quiz-progress-bar').style.width = `${(quizState.answered.length/carData.length)*100}%`;
+                feedbackBox.classList.remove('hidden');
+            };
             options.appendChild(btn);
         });
     };
 
-    function checkQuiz(selected, btn) {
-        const allBtns = document.querySelectorAll('.quiz-option');
-        const feedback = document.getElementById('quiz-feedback');
-        const scoreEl = document.getElementById('quiz-score');
-        allBtns.forEach(b => {
-            b.disabled = true;
-            b.classList.replace('hover:bg-blue-50', 'cursor-default');
-        });
-
-        if(selected === quizState.currentTarget.id) {
-            btn.classList.add('bg-green-500', 'text-white', 'border-green-500', 'correct-anim');
-            btn.classList.remove('bg-white', 'text-slate-700');
-            quizState.score++;
-            quizState.answered.push(quizState.currentTarget.plate);
-            feedback.innerText = "正確！住戶配對成功。";
-            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-green-50 text-green-700 border border-green-200";
-        } else {
-            btn.classList.add('bg-red-500', 'text-white', 'border-red-500');
-            btn.classList.remove('bg-white', 'text-slate-700');
-            feedback.innerText = `錯誤，這台車的住戶是 ${quizState.currentTarget.id}`;
-            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-red-50 text-red-700 border border-red-200";
-        }
-        
-        scoreEl.innerText = quizState.score;
-        const progress = (quizState.answered.length / carData.length) * 100;
-        document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
-        document.getElementById('quiz-feedback-box').classList.remove('hidden');
-    }
-
-    // --- 管理功能 ---
+    // --- 管理與編輯功能 ---
     function renderManage() {
         const list = document.getElementById('manage-list');
         document.getElementById('manage-count').innerText = carData.length;
-        // 依照住戶排序方便查看
-        const sorted = [...carData].sort((a,b) => a.id.localeCompare(b.id));
+        const sorted = [...carData].sort((a,b) => a.id.localeCompare(b.id, undefined, {numeric: true}));
         list.innerHTML = sorted.map(c => `
-            <tr class="hover:bg-slate-50 transition-colors group">
+            <tr class="hover:bg-slate-50">
                 <td class="p-3 font-black text-slate-700">${c.id}</td>
                 <td class="p-3 font-bold text-blue-600">${c.plate}</td>
-                <td class="p-3 text-xs text-slate-400 font-medium">${c.spot} 號車位 (${c.brand})</td>
+                <td class="p-3 text-xs text-slate-400">${c.spot} (${c.brand})</td>
                 <td class="p-3 text-right">
-                    <button onclick="window.openEditModal('${c.plate}')" class="text-slate-400 group-hover:text-blue-500 text-xs font-bold">編輯</button>
+                    <button onclick="window.openEditModal('${c.plate}')" class="text-blue-500 text-xs font-bold">編輯</button>
                 </td>
             </tr>
         `).join('');
@@ -383,28 +386,16 @@
 
     window.openEditModal = (plate) => {
         currentEditPlate = plate;
-        currentImgBase64 = null;
         const modalImg = document.getElementById('modal-preview-img');
-        
         if(plate) {
             const c = carData.find(x => x.plate === plate);
-            document.getElementById('edit-plate').value = c.plate;
-            document.getElementById('edit-spot').value = c.spot;
-            document.getElementById('edit-brand').value = c.brand;
-            document.getElementById('edit-color').value = c.color;
-            document.getElementById('edit-floor').value = c.floor;
-            document.getElementById('edit-id').value = c.id;
-            if(c.photoBase64) {
-                modalImg.src = c.photoBase64;
-                modalImg.classList.remove('hidden');
-                currentImgBase64 = c.photoBase64;
-            } else {
-                modalImg.classList.add('hidden');
-            }
+            ['plate','spot','brand','color','floor','id'].forEach(f => document.getElementById(`edit-${f}`).value = c[f]);
+            if(c.photoBase64) { modalImg.src = c.photoBase64; modalImg.classList.remove('hidden'); currentImgBase64 = c.photoBase64; }
+            else { modalImg.classList.add('hidden'); currentImgBase64 = null; }
             document.getElementById('delete-btn').classList.remove('hidden');
         } else {
             ['plate','spot','brand','color','floor','id'].forEach(f => document.getElementById(`edit-${f}`).value = '');
-            modalImg.classList.add('hidden');
+            modalImg.classList.add('hidden'); currentImgBase64 = null;
             document.getElementById('delete-btn').classList.add('hidden');
         }
         document.getElementById('edit-modal').classList.remove('hidden');
@@ -413,7 +404,6 @@
     window.saveCar = () => {
         const plate = document.getElementById('edit-plate').value.toUpperCase().trim();
         if(!plate) return;
-        
         const obj = {
             plate,
             spot: document.getElementById('edit-spot').value,
@@ -423,23 +413,19 @@
             id: document.getElementById('edit-id').value,
             photoBase64: currentImgBase64
         };
-        
         if(currentEditPlate) {
             const i = carData.findIndex(x => x.plate === currentEditPlate);
             carData[i] = obj;
-        } else {
-            carData.push(obj);
-        }
-        
-        localStorage.setItem('car_db_v4', JSON.stringify(carData));
+        } else carData.push(obj);
+        localStorage.setItem('car_db_v5', JSON.stringify(carData));
         window.closeEditModal();
         renderManage();
     };
 
     window.deleteCar = () => {
-        if(confirm("確定要刪除這筆車輛資料嗎？")) {
+        if(confirm("確定刪除？")) {
             carData = carData.filter(x => x.plate !== currentEditPlate);
-            localStorage.setItem('car_db_v4', JSON.stringify(carData));
+            localStorage.setItem('car_db_v5', JSON.stringify(carData));
             window.closeEditModal();
             renderManage();
         }
@@ -454,34 +440,24 @@
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                // 壓縮圖片大小以節省 localStorage 空間
-                const max = 300;
+                const max = 400;
                 let w = img.width, h = img.height;
                 if(w > h) { if(w > max) { h *= max/w; w = max; } }
                 else { if(h > max) { w *= max/h; h = max; } }
                 canvas.width = w; canvas.height = h;
                 ctx.drawImage(img, 0, 0, w, h);
                 currentImgBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                const modalImg = document.getElementById('modal-preview-img');
-                modalImg.src = currentImgBase64;
-                modalImg.classList.remove('hidden');
+                document.getElementById('modal-preview-img').src = currentImgBase64;
+                document.getElementById('modal-preview-img').classList.remove('hidden');
             };
             img.src = ev.target.result;
         };
         reader.readAsDataURL(file);
     };
 
-    window.resetToDefault = () => {
-        if(confirm("確定要恢復初始資料嗎？這將覆蓋您所有的修改與照片。")) {
-            localStorage.removeItem('car_db_v4');
-            carData = [...INITIAL_DB];
-            renderManage();
-        }
-    };
-
     window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
+    window.resetToDefault = () => { if(confirm("重設所有資料？")) { localStorage.removeItem('car_db_v5'); location.reload(); } };
 
-    // 初始化
     renderManage();
 </script>
 </body>
