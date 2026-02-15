@@ -15,7 +15,7 @@
             border-bottom: 3px solid #3b82f6;
             color: #3b82f6;
         }
-        * { -webkit-tap-highlight-ㄇcolor: transparent; }
+        * { -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .filter-select {
             appearance: none;
@@ -25,6 +25,11 @@
             background-size: 1.5em 1.5em;
             padding-right: 2.5rem;
         }
+        .quiz-option {
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .quiz-option:active { transform: scale(0.98); }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans text-slate-900">
@@ -88,9 +93,6 @@
                             <span class="text-slate-400 text-sm text-center px-4">尚未上傳照片</span>
                             <img id="car-img" class="absolute inset-0 w-full h-full object-cover hidden">
                         </div>
-                        <button onclick="window.openEditModalFromSearch()" class="w-full py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2 shadow-md">
-                             編輯車輛
-                        </button>
                     </div>
                 </div>
             </div>
@@ -98,16 +100,28 @@
         <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料。</div>
     </section>
 
-    <!-- 測驗區塊 (略過，邏輯相同) -->
+    <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
-            <h3 class="text-xl font-bold mb-4">隨機測驗</h3>
-            <p class="text-slate-400">請到「車輛管理」查看更新的功能。</p>
-            <button onclick="window.generateQuiz()" class="mt-4 px-6 py-2 bg-slate-800 text-white rounded-lg">開始測驗</button>
-            <div id="quiz-options" class="grid grid-cols-2 gap-4 mt-6"></div>
-            <div id="quiz-feedback-box" class="mt-4 hidden">
-                 <div id="quiz-feedback" class="p-3 rounded-lg mb-2"></div>
-                 <button onclick="window.generateQuiz()" class="w-full py-2 bg-blue-600 text-white rounded-lg">下一題</button>
+            <h3 class="text-xl font-bold mb-2">車位對應測驗</h3>
+            <p class="text-slate-400 text-sm mb-6">看車位號碼，選出正確的車牌號碼</p>
+            
+            <div id="quiz-question-container" class="mb-8">
+                <div class="text-sm text-blue-500 font-bold uppercase tracking-wider mb-2">目前題目車位</div>
+                <div id="quiz-question-spot" class="text-5xl font-black text-slate-800 tracking-tighter">---</div>
+            </div>
+
+            <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- 選項會動態插入 -->
+            </div>
+
+            <div id="quiz-feedback-box" class="mt-8 hidden animate-in slide-in-from-bottom-4 duration-300">
+                 <div id="quiz-feedback" class="p-4 rounded-xl font-bold mb-4"></div>
+                 <button onclick="window.generateQuiz()" class="w-full py-4 bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:bg-slate-900 transition-all">下一題</button>
+            </div>
+            
+            <div id="quiz-empty-state" class="hidden py-12">
+                <p class="text-slate-400 italic">目前沒有車位資料，請先導入資料或新增車輛。</p>
             </div>
         </div>
     </section>
@@ -172,7 +186,7 @@
         </div>
     </section>
 
-    <!-- 資料導入區塊 (略過，邏輯相同) -->
+    <!-- 資料導入區塊 -->
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h3 class="text-xl font-bold mb-4">資料導入</h3>
@@ -230,15 +244,18 @@
     let carData = JSON.parse(localStorage.getItem('local_car_db') || '[]');
     let currentEditPlate = null;
     let currentPreviewBase64 = null;
+    let quizAnswer = null;
 
     // 分頁切換
     window.switchTab = (tab) => {
         ['search', 'quiz', 'manage', 'data'].forEach(s => {
             document.getElementById(`section-${s}`).classList.add('hidden');
             document.getElementById(`tab-${s}`).classList.remove('tab-active');
+            document.getElementById(`tab-${s}`).className = "pb-2 px-2 md:px-4 font-medium transition-all text-slate-500 hover:text-blue-500";
         });
         document.getElementById(`section-${tab}`).classList.remove('hidden');
-        document.getElementById(`tab-${tab}`).classList.add('tab-active');
+        document.getElementById(`tab-${tab}`).className = "pb-2 px-2 md:px-4 font-medium transition-all tab-active";
+        
         if(tab === 'manage') { window.updateFilterOptions(); window.renderManageList(); }
         if(tab === 'quiz') window.generateQuiz();
     };
@@ -249,7 +266,7 @@
         document.getElementById('msg-modal').classList.remove('hidden');
     }
 
-    // 搜尋
+    // 搜尋邏輯
     document.getElementById('search-input').addEventListener('input', (e) => {
         const val = e.target.value.toUpperCase().trim();
         const container = document.getElementById('result-container');
@@ -271,7 +288,73 @@
         } else { container.classList.add('hidden'); noRes.classList.remove('hidden'); }
     });
 
-    // 編輯
+    // 隨機測驗邏輯
+    window.generateQuiz = () => {
+        const quizData = carData.filter(c => c.spot && c.plate);
+        const optionsContainer = document.getElementById('quiz-options');
+        const questionSpot = document.getElementById('quiz-question-spot');
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+        const emptyState = document.getElementById('quiz-empty-state');
+        const questionContainer = document.getElementById('quiz-question-container');
+
+        feedbackBox.classList.add('hidden');
+        optionsContainer.innerHTML = '';
+
+        if (quizData.length < 4) {
+            questionContainer.classList.add('hidden');
+            optionsContainer.classList.add('hidden');
+            emptyState.classList.remove('hidden');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        questionContainer.classList.remove('hidden');
+        optionsContainer.classList.remove('hidden');
+
+        // 隨機挑選一題
+        const target = quizData[Math.floor(Math.random() * quizData.length)];
+        quizAnswer = target.plate;
+        questionSpot.innerText = target.spot;
+
+        // 產生干擾選項
+        let options = [target.plate];
+        while (options.length < 4) {
+            const randomPlate = quizData[Math.floor(Math.random() * quizData.length)].plate;
+            if (!options.includes(randomPlate)) options.push(randomPlate);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option p-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-xl font-bold text-slate-700 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-sm';
+            btn.innerText = opt;
+            btn.onclick = () => window.checkQuiz(opt, btn);
+            optionsContainer.appendChild(btn);
+        });
+    };
+
+    window.checkQuiz = (selected, btn) => {
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+        const feedback = document.getElementById('quiz-feedback');
+        const allBtns = document.querySelectorAll('.quiz-option');
+        
+        allBtns.forEach(b => b.disabled = true);
+
+        if (selected === quizAnswer) {
+            btn.classList.replace('bg-slate-50', 'bg-green-100');
+            btn.classList.replace('border-slate-100', 'border-green-500');
+            feedback.innerText = "答對了！太厲害了！";
+            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-green-50 text-green-700 border border-green-200";
+        } else {
+            btn.classList.replace('bg-slate-50', 'bg-red-100');
+            btn.classList.replace('border-slate-100', 'border-red-500');
+            feedback.innerText = `答錯了，正確答案是：${quizAnswer}`;
+            feedback.className = "p-4 rounded-xl font-bold mb-4 bg-red-50 text-red-700 border border-red-200";
+        }
+        feedbackBox.classList.remove('hidden');
+    };
+
+    // 編輯與清單管理 (其餘邏輯維持不變)
     window.openEditModal = (plate = null) => {
         currentEditPlate = plate;
         currentPreviewBase64 = null;
@@ -345,7 +428,6 @@
         window.renderManageList();
     };
 
-    // 篩選選單更新
     window.updateFilterOptions = () => {
         const brands = [...new Set(carData.map(c => c.brand).filter(b => b))].sort();
         const colors = [...new Set(carData.map(c => c.color).filter(c => c))].sort();
@@ -361,7 +443,6 @@
         cSelect.value = colors.includes(cVal) ? cVal : 'all';
     };
 
-    // 渲染管理清單 (核心排序邏輯)
     window.renderManageList = () => {
         const floorF = document.getElementById('filter-floor').value;
         const brandF = document.getElementById('filter-brand').value;
@@ -375,16 +456,13 @@
             return mF && mB && mC;
         });
 
-        // 排序切換
         filtered.sort((a, b) => {
             if (sortMode === 'logic') {
-                // 邏輯排序：先排樓層再排車位
                 const fA = a.floor || "";
                 const fB = b.floor || "";
                 if (fA !== fB) return fA.localeCompare(fB);
                 return (a.spot || "").localeCompare(b.spot || "");
             } else {
-                // 車位編號排序：直接比對 15D, 14C...
                 return (a.spot || "").localeCompare(b.spot || "");
             }
         });
@@ -407,14 +485,13 @@
                     </td>
                     <td class="p-4 text-sm text-slate-500">${c.brand || ''} / ${c.color || ''}</td>
                     <td class="p-4 text-right">
-                        <button onclick="window.openEditModal('${c.plate}')" class="text-blue-500">編輯</button>
+                        <button onclick="window.openEditModal('${c.plate}')" class="text-blue-500 font-bold">編輯</button>
                     </td>
                 </tr>
             `;
         });
     };
 
-    // 導入
     window.importDataFromHTML = () => {
         const input = document.getElementById('raw-html-input').value;
         if(!input) return;
@@ -450,6 +527,8 @@
     };
     
     window.clearLocalData = () => { if(confirm("確定清空？")) { localStorage.removeItem('local_car_db'); location.reload(); }};
+    
+    // 初始化
     window.renderManageList();
 </script>
 </body>
