@@ -23,7 +23,7 @@
 <div id="app" class="max-w-4xl mx-auto px-4 py-8">
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
-        <p class="text-slate-500 mt-2">純本地儲存版 (免 Firebase 設定)</p>
+        <p class="text-slate-500 mt-2">進階測驗版 (支援照片與詳細資訊)</p>
     </header>
 
     <nav class="flex justify-center space-x-8 mb-8 border-b border-slate-200">
@@ -73,10 +73,9 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 圖片上傳區 -->
                     <div class="w-full md:w-64 space-y-4">
                         <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative">
-                            <span class="text-slate-400 text-sm text-center px-4">點擊下方按鈕上傳照片</span>
+                            <span class="text-slate-400 text-sm text-center px-4">尚未上傳照片</span>
                             <img id="car-img" class="absolute inset-0 w-full h-full object-cover hidden">
                         </div>
                         <label class="block w-full text-center py-3 bg-slate-800 text-white rounded-xl cursor-pointer hover:bg-slate-700 transition-colors font-medium">
@@ -87,20 +86,50 @@
                 </div>
             </div>
         </div>
-        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料，請確認是否已導入數據。</div>
+        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料。</div>
     </section>
 
     <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
-        <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
-            <h3 class="text-xl font-bold text-slate-600 mb-2">隨機測驗</h3>
-            <p class="text-slate-400 mb-6 font-medium">看車號，猜車位！</p>
-            <div class="mb-8">
-                <span id="quiz-plate" class="text-5xl font-black text-blue-600 tracking-wider">----</span>
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100">
+            <div class="text-center mb-6">
+                <h3 class="text-xl font-bold text-slate-600">看圖/車號猜車位</h3>
+                <p id="quiz-progress" class="text-sm text-slate-400 mt-1"></p>
             </div>
-            <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <div id="quiz-feedback" class="mt-6 h-8 font-bold text-lg"></div>
-            <button onclick="window.generateQuiz()" class="mt-8 px-10 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-md transition-all font-bold">下一題</button>
+
+            <div class="flex flex-col md:flex-row gap-6 mb-8 items-center">
+                <!-- 題目照片區 -->
+                <div id="quiz-photo-box" class="w-full md:w-1/2 aspect-video bg-slate-100 rounded-2xl border border-slate-200 overflow-hidden flex items-center justify-center relative">
+                    <img id="quiz-img" class="w-full h-full object-cover hidden">
+                    <div id="quiz-img-placeholder" class="text-slate-300 flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>無照片數據</span>
+                    </div>
+                </div>
+
+                <!-- 題目資訊區 -->
+                <div class="w-full md:w-1/2 space-y-4">
+                    <div class="p-6 bg-blue-50 rounded-2xl border border-blue-100 text-center">
+                        <p class="text-sm text-blue-400 font-bold uppercase mb-1">目標車牌</p>
+                        <h2 id="quiz-plate" class="text-4xl font-black text-blue-700 tracking-wider">----</h2>
+                        <div id="quiz-extra-info" class="mt-3 flex justify-center gap-2">
+                            <span id="quiz-brand" class="px-2 py-1 bg-white text-slate-500 rounded text-xs border border-blue-100"></span>
+                            <span id="quiz-color" class="px-2 py-1 bg-white text-slate-500 rounded text-xs border border-blue-100"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quiz-options" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+            
+            <div id="quiz-feedback-box" class="mt-8 hidden">
+                <div id="quiz-feedback" class="p-4 rounded-xl text-center font-bold text-lg mb-4"></div>
+                <button onclick="window.generateQuiz()" class="w-full py-4 bg-slate-800 text-white rounded-xl hover:bg-slate-700 shadow-lg transition-all font-bold text-lg">
+                    下一題
+                </button>
+            </div>
         </div>
     </section>
 
@@ -108,17 +137,10 @@
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
             <h3 class="text-xl font-bold mb-4">導入數據</h3>
-            <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800">
-                💡 現在支援 **Notion HTML 原始碼** 或 **直接複製貼上文字內容**。
-            </div>
-            <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="將內容貼到這裡..."></textarea>
+            <textarea id="raw-html-input" rows="8" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4" placeholder="貼上 Notion HTML 或 純文字數據..."></textarea>
             <div class="flex gap-4">
-                <button onclick="window.importDataFromHTML()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md transition-all">
-                    儲存數據至瀏覽器
-                </button>
-                <button onclick="window.clearLocalData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 transition-all border border-red-200">
-                    清空數據
-                </button>
+                <button onclick="window.importDataFromHTML()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">儲存數據</button>
+                <button onclick="window.clearLocalData()" class="px-6 py-4 bg-red-50 text-red-600 rounded-xl font-bold hover:bg-red-100 border border-red-200">清空</button>
             </div>
             <div id="import-status" class="mt-4 text-center text-sm font-medium"></div>
         </div>
@@ -134,10 +156,8 @@
 </div>
 
 <script>
-    // 核心數據
     let carData = JSON.parse(localStorage.getItem('local_car_db') || '[]');
 
-    // UI 切換
     window.switchTab = (tab) => {
         ['search', 'quiz', 'data'].forEach(s => {
             document.getElementById(`section-${s}`).classList.add('hidden');
@@ -156,139 +176,83 @@
         document.getElementById('msg-modal').classList.remove('hidden');
     }
 
-    // 解析數據 
+    // 資料導入邏輯 (相容純文字與 HTML)
     window.importDataFromHTML = () => {
         const input = document.getElementById('raw-html-input').value.trim();
         const status = document.getElementById('import-status');
-        if(!input) return showMsg("請貼上內容。");
+        if(!input) return;
 
         try {
             let newBatch = [];
-
-            // 判斷是 HTML 還是純文字
-            if (input.includes("<tr") || input.includes("<td")) {
-                // HTML 解析模式
+            if (input.includes("<tr")) {
                 const parser = new DOMParser();
                 const docObj = parser.parseFromString(input, 'text/html');
                 const rows = docObj.querySelectorAll('tr');
-
-                for (const row of rows) {
+                rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
                     if (cells.length >= 6) {
-                        const clean = (el) => el.innerText.trim();
-                        const plate = clean(cells[1]);
-                        if (!plate || plate === "車號" || plate === "車牌") continue;
-
-                        newBatch.push({
-                            id: clean(cells[0]),
-                            plate: plate,
-                            brand: clean(cells[2]),
-                            color: clean(cells[3]),
-                            floor: clean(cells[4]),
-                            spot: clean(cells[5]),
-                            photoBase64: null
-                        });
+                        const plate = cells[1].innerText.trim();
+                        if (plate && plate !== "車號" && plate !== "車牌") {
+                            newBatch.push({
+                                id: cells[0].innerText.trim(),
+                                plate: plate,
+                                brand: cells[2].innerText.trim(),
+                                color: cells[3].innerText.trim(),
+                                floor: cells[4].innerText.trim(),
+                                spot: cells[5].innerText.trim(),
+                                photoBase64: null
+                            });
+                        }
                     }
-                }
+                });
             } else {
-                // 純文字解析模式 (根據用戶貼上的換行格式)
                 const lines = input.split('\n').map(l => l.trim()).filter(l => l !== "");
-                
-                // 找到表格開始的位置 (過濾掉開頭的描述)
-                let startIndex = -1;
-                for(let i=0; i<lines.length; i++) {
-                    // 如果這行是純數字且下一行看起來像車牌格式
-                    if (!isNaN(lines[i]) && lines[i].length > 0 && lines[i+1] && lines[i+1].includes('-')) {
-                        startIndex = i;
-                        break;
-                    }
-                }
-
-                if (startIndex === -1) throw new Error("無法識別文字格式，請確認是否包含住戶編號與車牌。");
-
-                // 每 6 或 7 個欄位為一組 (視備註有無)
-                // 用戶的格式看起來是: 編號, 車牌, 品牌, 顏色, 樓層, 車位, (備註)
-                for (let i = startIndex; i < lines.length; ) {
-                    const id = lines[i];
-                    const plate = lines[i+1];
-                    
-                    // 簡單驗證車牌格式 (通常含 - 或數字)
-                    if (!plate || (!plate.includes('-') && isNaN(plate.charAt(0)) && plate.length < 5)) {
-                        i++; continue; 
-                    }
-
-                    newBatch.push({
-                        id: id,
-                        plate: plate,
-                        brand: lines[i+2] || "",
-                        color: lines[i+3] || "",
-                        floor: lines[i+4] || "",
-                        spot: lines[i+5] || "",
-                        photoBase64: null
-                    });
-                    
-                    // 判斷下一組編號的位置
-                    // 如果下下下一個是數字，且再下一個含橫槓，代表下一組開始
-                    let nextStep = 6;
-                    if (lines[i+6] && !isNaN(lines[i+6]) && lines[i+7] && lines[i+7].includes('-')) {
-                        nextStep = 6;
-                    } else if (lines[i+7] && !isNaN(lines[i+7])) {
-                        nextStep = 7;
-                    }
-                    i += nextStep;
+                for (let i = 0; i < lines.length; ) {
+                    if (!isNaN(lines[i]) && lines[i+1] && lines[i+1].includes('-')) {
+                        newBatch.push({
+                            id: lines[i], plate: lines[i+1], brand: lines[i+2],
+                            color: lines[i+3], floor: lines[i+4], spot: lines[i+5], photoBase64: null
+                        });
+                        i += (lines[i+6] && !isNaN(lines[i+6]) && lines[i+7] && lines[i+7].includes('-')) ? 6 : 7;
+                    } else { i++; }
                 }
             }
 
-            if (newBatch.length === 0) throw new Error("找不到有效的數據內容。");
+            if (newBatch.length === 0) throw new Error("解析失敗，請檢查格式。");
 
-            // 合併舊有圖片
-            newBatch = newBatch.map(newItem => {
-                const oldItem = carData.find(old => old.plate === newItem.plate);
-                if (oldItem && oldItem.photoBase64) newItem.photoBase64 = oldItem.photoBase64;
-                return newItem;
+            // 保留原有圖片
+            newBatch = newBatch.map(n => {
+                const old = carData.find(o => o.plate === n.plate);
+                if (old && old.photoBase64) n.photoBase64 = old.photoBase64;
+                return n;
             });
 
             carData = newBatch;
             localStorage.setItem('local_car_db', JSON.stringify(carData));
-            status.innerText = `✅ 成功！已在本地儲存 ${carData.length} 筆資料。`;
-            status.className = "mt-4 text-center text-sm font-medium text-emerald-600";
-            document.getElementById('raw-html-input').value = "";
-        } catch (err) {
-            status.innerText = "❌ 失敗：" + err.message;
-            status.className = "mt-4 text-center text-sm font-medium text-red-600";
+            status.innerText = `成功！共導入 ${carData.length} 筆。`;
+            status.className = "mt-4 text-emerald-600 font-bold";
+        } catch (e) {
+            status.innerText = "錯誤：" + e.message;
+            status.className = "mt-4 text-red-600 font-bold";
         }
     };
 
-    window.clearLocalData = () => {
-        if(confirm("確定要刪除所有本地資料嗎？")){
-            carData = [];
-            localStorage.removeItem('local_car_db');
-            showMsg("已清空所有本地資料。");
-            location.reload();
-        }
-    };
+    window.clearLocalData = () => { if(confirm("確定刪除？")) { localStorage.removeItem('local_car_db'); location.reload(); }};
 
-    // 圖片上傳
     window.handleImageUpload = (event) => {
         const file = event.target.files[0];
         const plate = document.getElementById('res-plate').innerText;
         if (!file || !plate) return;
-
-        if (file.size > 500000) {
-            return showMsg("圖片太大了！請上傳小於 500KB 的照片。");
-        }
-
         const reader = new FileReader();
         reader.onload = (e) => {
-            const base64 = e.target.result;
             const index = carData.findIndex(c => c.plate === plate);
             if (index !== -1) {
-                carData[index].photoBase64 = base64;
+                carData[index].photoBase64 = e.target.result;
                 localStorage.setItem('local_car_db', JSON.stringify(carData));
-                document.getElementById('car-img').src = base64;
+                document.getElementById('car-img').src = e.target.result;
                 document.getElementById('car-img').classList.remove('hidden');
                 document.querySelector('#photo-display span').classList.add('hidden');
-                showMsg("照片已儲存至您的瀏覽器！");
+                showMsg("照片已更新！");
             }
         };
         reader.readAsDataURL(file);
@@ -296,40 +260,65 @@
 
     // 測驗邏輯
     window.generateQuiz = () => {
-        const container = document.getElementById('quiz-options');
+        const optionsContainer = document.getElementById('quiz-options');
+        const feedbackBox = document.getElementById('quiz-feedback-box');
+        feedbackBox.classList.add('hidden');
+        
         if (carData.length < 4) {
-            container.innerHTML = "<p class='text-slate-400'>本地資料不足 4 筆，請先至「資料導入」分頁貼上數據。</p>";
+            optionsContainer.innerHTML = "資料不足，請先導入數據。";
             return;
         }
-        const fb = document.getElementById('quiz-feedback');
-        fb.innerText = "";
+
         const correct = carData[Math.floor(Math.random() * carData.length)];
         document.getElementById('quiz-plate').innerText = correct.plate;
+        document.getElementById('quiz-brand').innerText = correct.brand || '未知品牌';
+        document.getElementById('quiz-color').innerText = correct.color || '未知顏色';
         
+        // 處理照片
+        const qImg = document.getElementById('quiz-img');
+        const qImgPlaceholder = document.getElementById('quiz-img-placeholder');
+        if (correct.photoBase64) {
+            qImg.src = correct.photoBase64;
+            qImg.classList.remove('hidden');
+            qImgPlaceholder.classList.add('hidden');
+        } else {
+            qImg.classList.add('hidden');
+            qImgPlaceholder.classList.remove('hidden');
+        }
+
+        // 產生選項
         let opts = [correct.spot];
         while (opts.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].spot;
-            if(r && !opts.includes(r)) opts.push(r);
+            if (r && !opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
-        
-        container.innerHTML = "";
+
+        optionsContainer.innerHTML = "";
         opts.forEach(o => {
             const b = document.createElement('button');
-            b.className = "p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xl hover:bg-blue-50 transition-all active:scale-95";
+            b.className = "p-4 bg-white border-2 border-slate-100 rounded-xl font-bold text-lg hover:border-blue-500 hover:bg-blue-50 transition-all";
             b.innerText = o;
             b.onclick = () => {
-                if(o === correct.spot) {
-                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 text-emerald-500 font-bold text-lg";
+                // 禁用所有按鈕
+                optionsContainer.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                feedbackBox.classList.remove('hidden');
+                const fb = document.getElementById('quiz-feedback');
+                if (o === correct.spot) {
+                    fb.innerText = "🎉 太強了！答對了！";
+                    fb.className = "p-4 rounded-xl text-center font-bold text-lg mb-4 bg-emerald-100 text-emerald-700";
+                    b.classList.add('bg-emerald-500', 'text-white', 'border-emerald-500');
                 } else {
-                    fb.innerText = `猜錯了，正確車位是 ${correct.spot}`; fb.className = "mt-6 text-red-500 font-bold text-lg";
+                    fb.innerText = `❌ 哎呀！正確車位是 ${correct.spot}`;
+                    fb.className = "p-4 rounded-xl text-center font-bold text-lg mb-4 bg-red-100 text-red-700";
+                    b.classList.add('bg-red-500', 'text-white', 'border-red-500');
                 }
             };
-            container.appendChild(b);
+            optionsContainer.appendChild(b);
         });
     };
 
-    // 搜尋邏輯
+    // 搜尋功能
     document.getElementById('search-input').addEventListener('input', (e) => {
         const val = e.target.value.toUpperCase().trim();
         const container = document.getElementById('result-container');
@@ -344,7 +333,6 @@
             document.getElementById('res-spot').innerText = found.spot || '---';
             document.getElementById('res-floor').innerText = found.floor || '---';
             document.getElementById('res-id').innerText = found.id || '---';
-            
             const img = document.getElementById('car-img');
             const placeholder = document.querySelector('#photo-display span');
             if (found.photoBase64) {
@@ -352,11 +340,9 @@
             } else {
                 img.classList.add('hidden'); placeholder.classList.remove('hidden');
             }
-            container.classList.remove('hidden');
-            noRes.classList.add('hidden');
+            container.classList.remove('hidden'); noRes.classList.add('hidden');
         } else {
-            container.classList.add('hidden');
-            noRes.classList.remove('hidden');
+            container.classList.add('hidden'); noRes.classList.remove('hidden');
         }
     });
 </script>
