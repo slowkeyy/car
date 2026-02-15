@@ -26,7 +26,7 @@
 <div id="app" class="max-w-4xl mx-auto px-4 py-8">
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-bold text-slate-800">住戶車號管理系統</h1>
-        <p class="text-slate-500 mt-2">查詢、存檔與隨機考驗</p>
+        <p class="text-slate-500 mt-2">專屬 Notion HTML 導入優化版</p>
     </header>
 
     <nav class="flex justify-center space-x-8 mb-8 border-b border-slate-200">
@@ -35,6 +35,7 @@
         <button onclick="window.switchTab('data')" id="tab-data" class="pb-2 px-4 font-medium transition-all text-slate-500 hover:text-blue-500">資料導入</button>
     </nav>
 
+    <!-- 搜尋區塊 -->
     <section id="section-search" class="space-y-6">
         <div class="glass-morphism p-6 rounded-2xl shadow-sm border border-slate-200">
             <div class="relative">
@@ -47,6 +48,7 @@
                 </div>
             </div>
         </div>
+        
         <div id="result-container" class="hidden">
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 <div class="flex flex-col md:flex-row gap-8">
@@ -69,33 +71,34 @@
                                 <p id="res-spot" class="text-xl font-semibold text-slate-700"></p>
                             </div>
                             <div class="p-4 bg-slate-50 rounded-xl">
-                                <p class="text-xs text-slate-400 uppercase font-bold">序號</p>
-                                <p id="res-id" class="text-xl font-semibold text-slate-700"></p>
+                                <p class="text-xs text-slate-400 uppercase font-bold">樓層</p>
+                                <p id="res-floor" class="text-xl font-semibold text-slate-700"></p>
                             </div>
                         </div>
                     </div>
                     <div class="w-full md:w-64 space-y-4">
-                        <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative group">
+                        <div id="photo-display" class="w-full aspect-square bg-slate-100 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-slate-200 overflow-hidden relative">
                             <span class="text-slate-400 text-sm text-center px-4">尚未上傳照片</span>
                             <img id="car-img" class="absolute inset-0 w-full h-full object-cover hidden">
                         </div>
                         <label class="block w-full text-center py-3 bg-slate-800 text-white rounded-xl cursor-pointer hover:bg-slate-700 transition-colors font-medium">
-                            上傳/更新照片
+                            更新照片
                             <input type="file" id="photo-upload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
                         </label>
                     </div>
                 </div>
             </div>
         </div>
-        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到資訊。</div>
+        <div id="no-result" class="hidden text-center py-12 text-slate-400 italic">找不到匹配的資料。</div>
     </section>
 
+    <!-- 測驗區塊 -->
     <section id="section-quiz" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 text-center">
             <h3 class="text-xl font-bold text-slate-600 mb-2">隨機測驗</h3>
             <p class="text-slate-400 mb-6 font-medium">看車號，猜車位！</p>
             <div class="mb-8">
-                <span id="quiz-plate" class="text-5xl font-black text-blue-600">----</span>
+                <span id="quiz-plate" class="text-5xl font-black text-blue-600 tracking-wider">----</span>
             </div>
             <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div id="quiz-feedback" class="mt-6 h-8 font-bold text-lg"></div>
@@ -103,22 +106,30 @@
         </div>
     </section>
 
+    <!-- 導入區塊 -->
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
-            <h3 class="text-xl font-bold mb-4">資料導入工具</h3>
-            <p class="text-sm text-slate-500 mb-4">請打開您的原始 HTML 檔案，貼在下面：</p>
-            <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-emerald-500 focus:outline-none" placeholder="<html>...</html>"></textarea>
-            <button onclick="window.importDataFromHTML()" class="w-full py-4 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 shadow-md transition-all">
-                開始解析並導入雲端
+            <h3 class="text-xl font-bold mb-4">Notion HTML 導入</h3>
+            <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-4">
+                <ul class="text-sm text-blue-800 list-disc ml-5 space-y-1">
+                    <li>請將 Notion 匯出的 HTML 檔案以記事本開啟。</li>
+                    <li>全選 (Ctrl+A) 並複製所有原始碼。</li>
+                    <li>貼在下方並點擊「開始同步數據」。</li>
+                </ul>
+            </div>
+            <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="貼上 Notion HTML 內容..."></textarea>
+            <button onclick="window.importDataFromHTML()" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md transition-all">
+                開始同步數據至雲端
             </button>
             <div id="import-status" class="mt-4 text-center text-sm font-medium"></div>
         </div>
     </section>
 
+    <!-- Modal -->
     <div id="msg-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 px-4">
-        <div class="bg-white p-6 rounded-xl max-w-sm w-full shadow-2xl">
-            <p id="msg-content" class="text-center text-slate-700 font-medium"></p>
-            <button onclick="window.closeModal()" class="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg">確定</button>
+        <div class="bg-white p-6 rounded-xl max-w-sm w-full shadow-2xl text-center">
+            <p id="msg-content" class="text-slate-700 font-medium"></p>
+            <button onclick="window.closeModal()" class="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg font-bold">確定</button>
         </div>
     </div>
 </div>
@@ -128,14 +139,13 @@
     import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- 全域變數 ---
     let db = null;
     let auth = null;
     let user = null;
     let carData = [];
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'car-manager-v2';
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'notion-car-v2';
 
-    // --- 修正：預先定義 window 函數防止 Uncaught ReferenceError ---
+    // UI Tab 切換
     window.switchTab = (tab) => {
         ['search', 'quiz', 'data'].forEach(s => {
             const sec = document.getElementById(`section-${s}`);
@@ -146,55 +156,37 @@
                 tabBtn.classList.add('text-slate-500');
             }
         });
-        const activeSec = document.getElementById(`section-${tab}`);
-        const activeTab = document.getElementById(`tab-${tab}`);
-        if (activeSec) activeSec.classList.remove('hidden');
-        if (activeTab) {
-            activeTab.classList.add('tab-active');
-            activeTab.classList.remove('text-slate-500');
-        }
-        if(tab === 'quiz' && typeof window.generateQuiz === 'function') window.generateQuiz();
+        document.getElementById(`section-${tab}`).classList.remove('hidden');
+        document.getElementById(`tab-${tab}`).classList.add('tab-active');
+        document.getElementById(`tab-${tab}`).classList.remove('text-slate-500');
+        if(tab === 'quiz') window.generateQuiz();
     };
 
     window.closeModal = () => document.getElementById('msg-modal').classList.add('hidden');
-    
-    function showMessage(t) { 
-        const modal = document.getElementById('msg-modal');
-        const content = document.getElementById('msg-content');
-        if (modal && content) {
-            content.innerText = t; 
-            modal.classList.remove('hidden');
-        }
+    function showMsg(t) {
+        document.getElementById('msg-content').innerText = t;
+        document.getElementById('msg-modal').classList.remove('hidden');
     }
 
-    // --- Firebase 初始化 ---
+    // Firebase
     async function setupFirebase() {
         let config = null;
-
-        // 1. 嘗試從系統讀取
         if (typeof __firebase_config !== 'undefined') {
             config = JSON.parse(__firebase_config);
-        } 
-        // 2. 如果你在 GitHub Pages，請在下方 manualConfig 貼上你的 Firebase SDK 配置
-        else {
+        } else {
+            // 手動設定區
             const manualConfig = {
-                apiKey: "你的API_KEY",
-                authDomain: "你的專案.firebaseapp.com",
-                projectId: "你的專案ID",
-                storageBucket: "你的專案.appspot.com",
+                apiKey: "您的API_KEY",
+                authDomain: "您的專案ID.firebaseapp.com",
+                projectId: "您的專案ID",
+                storageBucket: "您的專案ID.appspot.com",
                 messagingSenderId: "...",
                 appId: "..."
             };
-            
-            if (manualConfig.apiKey !== "你的API_KEY") {
-                config = manualConfig;
-            }
+            if (manualConfig.apiKey !== "您的API_KEY") config = manualConfig;
         }
 
-        if (!config) {
-            console.warn("Firebase 配置未設定。如果您在 GitHub Pages 運行，請編輯代碼中的 manualConfig。");
-            return;
-        }
+        if (!config) return console.warn("Firebase 未配置");
 
         try {
             const app = initializeApp(config);
@@ -209,28 +201,29 @@
 
             onAuthStateChanged(auth, (u) => {
                 user = u;
-                if (user) startSync();
+                if (user) syncData();
             });
-        } catch (e) {
-            console.error("Firebase Setup Error:", e);
-        }
+        } catch (e) { console.error(e); }
     }
 
-    function startSync() {
+    function syncData() {
         if (!db) return;
         const q = collection(db, 'artifacts', appId, 'public', 'data', 'cars');
         onSnapshot(q, (snapshot) => {
             carData = snapshot.docs.map(doc => doc.data());
-        }, (err) => console.error("Firestore Error:", err));
+        });
     }
 
+    // 針對上傳文件優化的 Notion 解析器
     window.importDataFromHTML = async () => {
-        if (!user || !db) return showMessage("Firebase 未連線。請確認代碼中的 manualConfig 是否正確。");
+        if (!user || !db) return showMsg("請檢查 Firebase 設定。");
         const input = document.getElementById('raw-html-input').value;
         const status = document.getElementById('import-status');
-        if(!input) return showMessage("請先貼上內容。");
+        if(!input) return showMsg("內容不能為空。");
 
-        status.innerText = "正在處理...";
+        status.innerText = "⏳ 正在分析並上傳雲端...";
+        status.className = "mt-4 text-center text-sm font-medium text-blue-600";
+
         try {
             const parser = new DOMParser();
             const docObj = parser.parseFromString(input, 'text/html');
@@ -239,26 +232,31 @@
 
             for (const row of rows) {
                 const cells = row.querySelectorAll('td');
+                // 檢查是否符合您的 Notion 表格列數 (通常含 ID, 車號, 廠牌, 顏色, 樓層, 車位)
                 if (cells.length >= 6) {
                     const plate = cells[1].innerText.trim();
-                    if (!plate || plate === "車號") continue;
-                    const carInfo = {
+                    if (!plate || plate === "車號" || plate === "Plate") continue;
+
+                    const data = {
                         id: cells[0].innerText.trim(),
                         plate: plate,
                         brand: cells[2].innerText.trim(),
                         color: cells[3].innerText.trim(),
-                        level: cells[4].innerText.trim(),
+                        floor: cells[4].innerText.trim(),
                         spot: cells[5].innerText.trim(),
                         updatedAt: Date.now()
                     };
-                    const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', carInfo.plate);
-                    await setDoc(carDoc, carInfo, { merge: true });
+
+                    const carDoc = doc(db, 'artifacts', appId, 'public', 'data', 'cars', data.plate);
+                    await setDoc(carDoc, data, { merge: true });
                     count++;
                 }
             }
-            status.innerText = `成功導入 ${count} 筆！`;
+            status.innerText = `✅ 同步完成！共導入 ${count} 筆資料。`;
+            status.className = "mt-4 text-center text-sm font-medium text-emerald-600";
         } catch (err) {
-            status.innerText = "錯誤：" + err.message;
+            status.innerText = "❌ 錯誤：" + err.message;
+            status.className = "mt-4 text-center text-sm font-medium text-red-600";
         }
     };
 
@@ -275,7 +273,8 @@
                 document.getElementById('car-img').src = base64;
                 document.getElementById('car-img').classList.remove('hidden');
                 document.querySelector('#photo-display span').classList.add('hidden');
-            } catch (err) { showMessage("儲存圖片失敗"); }
+                showMsg("照片已成功同步至雲端！");
+            } catch (err) { showMsg("圖片存儲失敗"); }
         };
         reader.readAsDataURL(file);
     };
@@ -283,29 +282,31 @@
     window.generateQuiz = () => {
         const container = document.getElementById('quiz-options');
         if (carData.length < 4) {
-            container.innerHTML = "資料不足。";
+            container.innerHTML = "<p class='text-slate-400'>目前雲端資料不足 4 筆。</p>";
             return;
         }
         const fb = document.getElementById('quiz-feedback');
         fb.innerText = "";
         const correct = carData[Math.floor(Math.random() * carData.length)];
         document.getElementById('quiz-plate').innerText = correct.plate;
-        let options = [correct.spot];
-        while (options.length < 4) {
+        
+        let opts = [correct.spot];
+        while (opts.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].spot;
-            if(!options.includes(r)) options.push(r);
+            if(!opts.includes(r)) opts.push(r);
         }
-        options.sort(() => Math.random() - 0.5);
+        opts.sort(() => Math.random() - 0.5);
+        
         container.innerHTML = "";
-        options.forEach(opt => {
+        opts.forEach(o => {
             const b = document.createElement('button');
-            b.className = "p-5 bg-slate-50 border rounded-2xl font-bold text-xl hover:bg-blue-50";
-            b.innerText = opt;
+            b.className = "p-5 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-xl hover:bg-blue-50 transition-all active:scale-95";
+            b.innerText = o;
             b.onclick = () => {
-                if(opt === correct.spot) {
-                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 text-emerald-500 font-bold";
+                if(o === correct.spot) {
+                    fb.innerText = "答對了！🎉"; fb.className = "mt-6 text-emerald-500 font-bold text-lg";
                 } else {
-                    fb.innerText = `錯了，答案是 ${correct.spot}`; fb.className = "mt-6 text-red-500 font-bold";
+                    fb.innerText = `猜錯了，正確車位是 ${correct.spot}`; fb.className = "mt-6 text-red-500 font-bold text-lg";
                 }
             };
             container.appendChild(b);
@@ -316,15 +317,17 @@
         const val = e.target.value.toUpperCase().trim();
         const container = document.getElementById('result-container');
         const noRes = document.getElementById('no-result');
-        if (!val) { container.classList.add('hidden'); return; }
-        const found = carData.find(c => c.plate.includes(val) || c.spot.includes(val));
+        if (!val) { container.classList.add('hidden'); noRes.classList.add('hidden'); return; }
+        
+        const found = carData.find(c => c.plate.includes(val) || (c.spot && c.spot.includes(val)));
         if (found) {
             document.getElementById('res-plate').innerText = found.plate;
-            document.getElementById('res-brand').innerText = found.brand;
-            document.getElementById('res-color').innerText = found.color;
-            document.getElementById('res-spot').innerText = found.spot;
-            document.getElementById('res-level').innerText = found.level;
-            document.getElementById('res-id').innerText = found.id;
+            document.getElementById('res-brand').innerText = found.brand || '---';
+            document.getElementById('res-color').innerText = found.color || '---';
+            document.getElementById('res-spot').innerText = found.spot || '---';
+            document.getElementById('res-floor').innerText = found.floor || '---';
+            document.getElementById('res-id').innerText = found.id || '---';
+            
             const img = document.getElementById('car-img');
             const placeholder = document.querySelector('#photo-display span');
             if (found.photoBase64) {
