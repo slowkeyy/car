@@ -107,11 +107,11 @@
     <!-- 資料導入 -->
     <section id="section-data" class="hidden space-y-6">
         <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100">
-            <h3 class="text-xl font-bold mb-4">導入 Notion HTML</h3>
+            <h3 class="text-xl font-bold mb-4">導入數據</h3>
             <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-4 text-sm text-amber-800">
-                ⚠️ 注意：此版本數據儲存在您的瀏覽器中。若清除瀏覽器快取，數據將會消失，建議保留 HTML 備份。
+                💡 現在支援 **Notion HTML 原始碼** 或 **直接複製貼上文字內容**。
             </div>
-            <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="將 Notion 匯出的 HTML 檔案原始碼貼到這裡..."></textarea>
+            <textarea id="raw-html-input" rows="10" class="w-full p-4 border border-slate-200 rounded-xl font-mono text-xs mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="將內容貼到這裡..."></textarea>
             <div class="flex gap-4">
                 <button onclick="window.importDataFromHTML()" class="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md transition-all">
                     儲存數據至瀏覽器
@@ -156,40 +156,92 @@
         document.getElementById('msg-modal').classList.remove('hidden');
     }
 
-    // 解析 Notion HTML 
+    // 解析數據 
     window.importDataFromHTML = () => {
-        const input = document.getElementById('raw-html-input').value;
+        const input = document.getElementById('raw-html-input').value.trim();
         const status = document.getElementById('import-status');
-        if(!input) return showMsg("請貼上 HTML 原始碼內容。");
+        if(!input) return showMsg("請貼上內容。");
 
         try {
-            const parser = new DOMParser();
-            const docObj = parser.parseFromString(input, 'text/html');
-            const rows = docObj.querySelectorAll('tr');
             let newBatch = [];
 
-            for (const row of rows) {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 6) {
-                    const clean = (el) => el.innerText.trim();
-                    const plate = clean(cells[1]);
-                    if (!plate || plate === "車號") continue;
+            // 判斷是 HTML 還是純文字
+            if (input.includes("<tr") || input.includes("<td")) {
+                // HTML 解析模式
+                const parser = new DOMParser();
+                const docObj = parser.parseFromString(input, 'text/html');
+                const rows = docObj.querySelectorAll('tr');
+
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 6) {
+                        const clean = (el) => el.innerText.trim();
+                        const plate = clean(cells[1]);
+                        if (!plate || plate === "車號" || plate === "車牌") continue;
+
+                        newBatch.push({
+                            id: clean(cells[0]),
+                            plate: plate,
+                            brand: clean(cells[2]),
+                            color: clean(cells[3]),
+                            floor: clean(cells[4]),
+                            spot: clean(cells[5]),
+                            photoBase64: null
+                        });
+                    }
+                }
+            } else {
+                // 純文字解析模式 (根據用戶貼上的換行格式)
+                const lines = input.split('\n').map(l => l.trim()).filter(l => l !== "");
+                
+                // 找到表格開始的位置 (過濾掉開頭的描述)
+                let startIndex = -1;
+                for(let i=0; i<lines.length; i++) {
+                    // 如果這行是純數字且下一行看起來像車牌格式
+                    if (!isNaN(lines[i]) && lines[i].length > 0 && lines[i+1] && lines[i+1].includes('-')) {
+                        startIndex = i;
+                        break;
+                    }
+                }
+
+                if (startIndex === -1) throw new Error("無法識別文字格式，請確認是否包含住戶編號與車牌。");
+
+                // 每 6 或 7 個欄位為一組 (視備註有無)
+                // 用戶的格式看起來是: 編號, 車牌, 品牌, 顏色, 樓層, 車位, (備註)
+                for (let i = startIndex; i < lines.length; ) {
+                    const id = lines[i];
+                    const plate = lines[i+1];
+                    
+                    // 簡單驗證車牌格式 (通常含 - 或數字)
+                    if (!plate || (!plate.includes('-') && isNaN(plate.charAt(0)) && plate.length < 5)) {
+                        i++; continue; 
+                    }
 
                     newBatch.push({
-                        id: clean(cells[0]),
+                        id: id,
                         plate: plate,
-                        brand: clean(cells[2]),
-                        color: clean(cells[3]),
-                        floor: clean(cells[4]),
-                        spot: clean(cells[5]),
-                        photoBase64: null // 新導入的預設沒圖
+                        brand: lines[i+2] || "",
+                        color: lines[i+3] || "",
+                        floor: lines[i+4] || "",
+                        spot: lines[i+5] || "",
+                        photoBase64: null
                     });
+                    
+                    // 判斷下一組編號的位置
+                    // 如果下下下一個是數字，且再下一個含橫槓，代表下一組開始
+                    let nextStep = 6;
+                    if (lines[i+6] && !isNaN(lines[i+6]) && lines[i+7] && lines[i+7].includes('-')) {
+                        nextStep = 6;
+                    } else if (lines[i+7] && !isNaN(lines[i+7])) {
+                        nextStep = 7;
+                    }
+                    i += nextStep;
                 }
             }
 
-            if (newBatch.length === 0) throw new Error("找不到有效的表格數據，請確認 HTML 格式。");
+            if (newBatch.length === 0) throw new Error("找不到有效的數據內容。");
 
-            // 合併舊有圖片 (如果車號相同就保留舊圖)
+            // 合併舊有圖片
             newBatch = newBatch.map(newItem => {
                 const oldItem = carData.find(old => old.plate === newItem.plate);
                 if (oldItem && oldItem.photoBase64) newItem.photoBase64 = oldItem.photoBase64;
@@ -222,8 +274,7 @@
         const plate = document.getElementById('res-plate').innerText;
         if (!file || !plate) return;
 
-        // 檢查檔案大小 (localStorage 有上限，建議限制圖片大小)
-        if (file.size > 500000) { // 500kb
+        if (file.size > 500000) {
             return showMsg("圖片太大了！請上傳小於 500KB 的照片。");
         }
 
@@ -258,7 +309,7 @@
         let opts = [correct.spot];
         while (opts.length < 4) {
             const r = carData[Math.floor(Math.random() * carData.length)].spot;
-            if(!opts.includes(r)) opts.push(r);
+            if(r && !opts.includes(r)) opts.push(r);
         }
         opts.sort(() => Math.random() - 0.5);
         
